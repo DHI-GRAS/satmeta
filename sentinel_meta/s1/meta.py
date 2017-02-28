@@ -8,7 +8,7 @@ import logging
 from collections import defaultdict
 from collections import OrderedDict
 
-logger = logging.getLogger('sentinel_meta.s1meta')
+logger = logging.getLogger('sentinel_meta.s1.meta')
 
 
 def dates_from_fname(fname, zero_time=False):
