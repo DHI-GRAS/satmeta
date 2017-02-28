@@ -30,13 +30,19 @@ def dates_from_fname(fname, zero_time=False):
     return [datetime.datetime.strptime(d, fmt) for d in dd]
 
 
-def read_manifest_SAFE(inSAFE):
+def find_manifest_in_SAFE(inSAFE):
+    """Find manifest in SAFE folder"""
     pattern = os.path.join(inSAFE, 'manifest.safe')
     try:
-        manifest = glob.glob(pattern)[0]
+        return glob.glob(pattern)[0]
     except IndexError:
         raise ValueError('No manifest file found by searching for \'{}\'.'
                 ''.format(pattern))
+
+
+def read_manifest_SAFE(inSAFE):
+    """Find and read manifest file in SAFE folder"""
+    manifest = find_manifest_in_SAFE(inSAFE)
     with open(manifest) as f:
         return f.read().split('\n')
 
