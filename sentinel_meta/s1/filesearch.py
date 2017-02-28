@@ -73,11 +73,14 @@ def find_input_files(indir, formats=['zip', 'SAFE']):
 
 def check_same_infile_type(infiles):
     """Check whether all input files have same file type"""
+    if not infiles:
+        return True
     patterns = ['manifest\.safe', '.*\.zip', '.*\.SAFE']
     all_match = []
     for pattern in patterns:
-        all_match.append(
-                all([re.match(pattern, os.path.basename(infile)) is not None for infile in infiles]))
+        matching = [re.match(pattern, os.path.basename(infile)) is not None for infile in infiles]
+        if matching:
+            all_match.append(all(matching))
     if sum(all_match) == 1:
         return True
     else:
