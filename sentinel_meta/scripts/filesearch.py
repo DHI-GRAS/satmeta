@@ -10,6 +10,7 @@ logger = logging.getLogger('sentinel_meta.scripts.filesearch')
 
 @click.group()
 def filesearch():
+    """Filter sentinel data files by meta data"""
     pass
 
 

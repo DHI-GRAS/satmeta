@@ -10,4 +10,5 @@ setup(
     entry_points="""
     [console_scripts]
     sentinel_meta=sentinel_meta.scripts.cli:cli
+    sentinel_filesearch=sentinel_meta.scripts.filesearch:filesearch
     """)

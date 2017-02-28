@@ -36,7 +36,11 @@ def filter_orbit_numbers(infiles, orbit_numbers):
 
     infiles_filtered = []
     for infile in tqdm(infiles, desc='Orbit number filter', unit='input file'):
-        o = meta.get_orbit_number(infile)
+        try:
+            o = meta.get_orbit_number(infile)
+        except meta.MetaDataError as me:
+            logger.info('Unable to get orbit number from file \'{}\'. {}. Skipping.'.format(infile, me))
+            continue
         logger.debug('Input file \'{}\' has orbit number {}.'.format(infile, o))
         if o in orbit_numbers:
             infiles_filtered.append(infile)

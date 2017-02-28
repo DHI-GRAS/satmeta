@@ -11,6 +11,10 @@ from collections import OrderedDict
 logger = logging.getLogger('sentinel_meta.s1.meta')
 
 
+class MetaDataError(Exception):
+    pass
+
+
 def dates_from_fname(fname, zero_time=False):
     fname = os.path.basename(fname)
     if zero_time:
@@ -38,10 +42,13 @@ def read_manifest_SAFE(inSAFE):
 
 
 def read_manifest_ZIP(zipfilepath):
-    with zipfile.ZipFile(zipfilepath) as zf:
-        SAFEdir = zf.namelist()[0]
-        manifest = posixpath.join(SAFEdir, 'manifest.safe')
-        return zf.open(manifest).read().split('\n')
+    try:
+        with zipfile.ZipFile(zipfilepath) as zf:
+            SAFEdir = zf.namelist()[0]
+            manifest = posixpath.join(SAFEdir, 'manifest.safe')
+            return zf.open(manifest).read().split('\n')
+    except zipfile.BadZipfile as e:
+        raise MetaDataError('Unable to read zip file \'{}\': {}'.format(zipfilepath, str(e)))
 
 
 def get_orbit_number(infile):
