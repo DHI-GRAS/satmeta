@@ -26,3 +26,16 @@ class Datetime(click.ParamType):
         except ValueError as ex:
             self.fail('Could not parse datetime string "{datetime_str}" formatted as {format} ({ex})'.format(
                 datetime_str=value, format=self.format, ex=ex,), param, ctx)
+
+
+def read_aoifile(aoifile):
+    """Read first feature geometry from file using fiona
+
+    Returns
+    -------
+    shapely.geometry.shape
+    """
+    import geopandas as gpd
+    gdf = gpd.read_file(aoifile)
+    feat = gdf.take([0], axis=0).to_crs(epsg=4326)
+    return feat.geometry[0]
