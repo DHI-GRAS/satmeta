@@ -1,10 +1,9 @@
 import re
 import os.path
+import functools
 import datetime
 import logging
 import warnings
-
-import lxml.etree
 
 from . import metafile
 from .. import converters
@@ -54,19 +53,15 @@ def get_orbit_number(infile):
 
 
 def parse_metadata(metadatafile=None, metadatastr=None):
-    if metadatafile:
-        root = lxml.etree.parse(metadatafile).getroot()
-    elif metadatastr:
-        root = lxml.etree.fromstring(metadatastr)
-    else:
-        raise ValueError('Either metadatafile or metadatastr must be specified.')
+    root = converters.get_root(metadatafile, metadatastr)
+    _get_single = functools.partial(converters.get_single, root)
     metadata = {
             'footPrint': converters.get_single_polygon(root, 'gml:coordinates'),
             'relativeOrbitNumber': xml_get_relativeOrbitNumber(root),
             'startTime': converters.get_single_date(root, 'safe:startTime'),
             'stopTime': converters.get_single_date(root, 'safe:stopTime'),
-            'resource_name': converters.get_instance(root, 'safe:resource', 'name'),
-            'productType': converters.get_single(root, 's1sarl1:productType'),
+            'resource_name': converters.get_instance(root, 'safe:resource', 'name', index=0),
+            'productType': _get_single('s1sarl1:productType'),
             'polarizations': converters.get_all(root, 's1sarl1:transmitterReceiverPolarisation')}
     metadata['platform'] = get_platform_name(metadata['resource_name'])
     return metadata
