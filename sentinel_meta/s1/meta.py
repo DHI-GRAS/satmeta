@@ -49,17 +49,17 @@ def xml_get_relativeOrbitNumber(root):
 
 
 def get_orbit_number(infile):
-    metadata = find_parse_manifest(infile)
+    metadata = find_parse_metadata(infile)
     return metadata['orbitNumber']
 
 
-def parse_manifest(manifestfile=None, manifeststr=None):
-    if manifestfile:
-        root = lxml.etree.parse(manifestfile).getroot()
-    elif manifeststr:
-        root = lxml.etree.fromstring(manifeststr)
+def parse_metadata(metadatafile=None, metadatastr=None):
+    if metadatafile:
+        root = lxml.etree.parse(metadatafile).getroot()
+    elif metadatastr:
+        root = lxml.etree.fromstring(metadatastr)
     else:
-        raise ValueError('Either manifestfile or manifeststr must be specified.')
+        raise ValueError('Either metadatafile or metadatastr must be specified.')
     metadata = {
             'footPrint': converters.get_single_polygon(root, 'gml:coordinates'),
             'relativeOrbitNumber': xml_get_relativeOrbitNumber(root),
@@ -72,10 +72,10 @@ def parse_manifest(manifestfile=None, manifeststr=None):
     return metadata
 
 
-def find_parse_manifest(infile):
+def find_parse_metadata(infile):
     """Find and parse manifest in SAFE or zip file"""
     if infile.endswith('.SAFE'):
         mstr = metafile.read_manifest_SAFE(infile)
     elif infile.endswith('.zip'):
         mstr = metafile.read_manifest_ZIP(infile)
-    return parse_manifest(manifeststr=mstr)
+    return parse_metadata(metadatastr=mstr)

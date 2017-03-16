@@ -13,11 +13,11 @@ def test_read_manifest_SAFE():
     assert bool(content)
 
 
-def test_parse_manifest():
-    meta = s1meta.parse_manifest(manifestfile=test_data['manifest'])
+def test_parse_metadata():
+    meta = s1meta.parse_metadata(metadatafile=test_data['manifest'])
     assert isinstance(meta, dict)
 
 
-def test_find_parse_manifest_zip():
-    meta = s1meta.find_parse_manifest(test_data['zip'])
+def test_find_parse_metadata_zip():
+    meta = s1meta.find_parse_metadata(test_data['zip'])
     assert isinstance(meta, dict)
