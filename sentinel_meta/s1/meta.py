@@ -7,9 +7,9 @@ import posixpath
 import logging
 import warnings
 
-import dateutil.parser
 import lxml.etree
-import shapely.geometry
+
+from .. import converters
 
 logger = logging.getLogger('sentinel_meta.s1.meta')
 
@@ -73,49 +73,12 @@ def get_product_date(fname):
     return dates_from_fname(fname)[0].date()
 
 
-def _parse_coordinates_str(cs):
-    """Parse coordinates string"""
-    return [tuple(map(float, s.split(','))) for s in cs.split()]
-
-
-def _coords_to_polygon(coords):
-    return shapely.geometry.shape(dict(type='Polygon', coordinates=[coords]))
-
-
-def xml_get_footPrint(root):
-    coordinates_str = root.findall('.//gml:coordinates', namespaces=root.nsmap)[0].text
-    coords = _parse_coordinates_str(coordinates_str)
-    return shapely.geometry.shape(dict(type='Polygon', coordinates=[coords]))
-
-
 def xml_get_relativeOrbitNumber(root):
-    start = int(root.findall('.//safe:relativeOrbitNumber[@type=\'start\']', namespaces=root.nsmap)[0].text)
-    stop = int(root.findall('.//safe:relativeOrbitNumber[@type=\'stop\']', namespaces=root.nsmap)[0].text)
+    start = int(converters.get_single(root, 'safe:relativeOrbitNumber[@type=\'start\']'))
+    stop = int(converters.get_single(root, 'safe:relativeOrbitNumber[@type=\'stop\']'))
     if start != stop:
         warnings.warn('relativeOrbitNumber range from {} to {}. Only returning {}'.format(start, stop, start))
     return start
-
-
-def xml_get_startTime(root):
-    datestr = root.findall('.//safe:startTime', namespaces=root.nsmap)[0].text
-    return dateutil.parser.parse(datestr)
-
-
-def xml_get_stopTime(root):
-    datestr = root.findall('.//safe:stopTime', namespaces=root.nsmap)[0].text
-    return dateutil.parser.parse(datestr)
-
-
-def xml_get_resource_name(root):
-    return root.findall('.//safe:resource', namespaces=root.nsmap)[0].attrib['name']
-
-
-def xml_get_productType(root):
-    return root.findall('.//s1sarl1:productType', namespaces=root.nsmap)[0].text
-
-
-def xml_get_transmitterReceiverPolarisation(root):
-    return [e.text for e in root.findall('.//s1sarl1:transmitterReceiverPolarisation', namespaces=root.nsmap)]
 
 
 def parse_manifest(manifestfile=None, manifeststr=None):
@@ -126,13 +89,13 @@ def parse_manifest(manifestfile=None, manifeststr=None):
     else:
         raise ValueError('Either manifestfile or manifeststr must be specified.')
     metadata = {
-            'footPrint': xml_get_footPrint(root),
+            'footPrint': converters.get_single_polygon(root, 'gml:coordinates'),
             'relativeOrbitNumber': xml_get_relativeOrbitNumber(root),
-            'startTime': xml_get_startTime(root),
-            'stopTime': xml_get_stopTime(root),
-            'resource_name': xml_get_resource_name(root),
-            'productType': xml_get_productType(root),
-            'polarizations': xml_get_transmitterReceiverPolarisation(root)}
+            'startTime': converters.get_single_date(root, 'safe:startTime'),
+            'stopTime': converters.get_single_date(root, 'safe:stopTime'),
+            'resource_name': converters.get_single(root, 'safe:resource', 'name'),
+            'productType': converters.get_single(root, 's1sarl1:productType'),
+            'polarizations': converters.get_all(root, 's1sarl1:transmitterReceiverPolarisation')}
     metadata['platform'] = get_platform_name(metadata['resource_name'])
     return metadata
 
