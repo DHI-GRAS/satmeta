@@ -4,7 +4,7 @@ import zipfile
 import posixpath
 import logging
 
-from ...exceptions import MetaDataError
+from ..exceptions import MetaDataError
 
 logger = logging.getLogger(__name__)
 

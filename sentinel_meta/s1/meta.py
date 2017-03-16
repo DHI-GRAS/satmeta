@@ -57,7 +57,7 @@ def parse_manifest(manifestfile=None, manifeststr=None):
     if manifestfile:
         root = lxml.etree.parse(manifestfile).getroot()
     elif manifeststr:
-        root = lxml.etree.fromstring(manifeststr).getroot()
+        root = lxml.etree.fromstring(manifeststr)
     else:
         raise ValueError('Either manifestfile or manifeststr must be specified.')
     metadata = {
@@ -73,6 +73,7 @@ def parse_manifest(manifestfile=None, manifeststr=None):
 
 
 def find_parse_manifest(infile):
+    """Find and parse manifest in SAFE or zip file"""
     if infile.endswith('.SAFE'):
         mstr = metafile.read_manifest_SAFE(infile)
     elif infile.endswith('.zip'):

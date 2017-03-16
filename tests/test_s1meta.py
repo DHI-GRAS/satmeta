@@ -1,23 +1,23 @@
-import os
-
 import sentinel_meta.s1.meta as s1meta
+import sentinel_meta.s1.metafile as s1metafile
 
-testdatadir = os.path.join(os.path.dirname(__file__), 'data', 's1')
-
-testSAFE = os.path.join(testdatadir, 'SAFE_with_manifest', 'S1A_IW_GRDH_1SDV_20160114T053940_20160114T054005_009486_00DC3C_4695.SAFE')
-
-testmanifest = os.path.join(testSAFE, 'manifest.safe')
+from .data.s1 import test_data
 
 
 def test_find_manifest_in_SAFE():
-    s1meta.find_manifest_in_SAFE(testSAFE)
+    s1metafile.find_manifest_in_SAFE(test_data['SAFE'])
 
 
 def test_read_manifest_SAFE():
-    content = s1meta.read_manifest_SAFE(testSAFE)
+    content = s1metafile.read_manifest_SAFE(test_data['SAFE'])
     assert bool(content)
 
 
 def test_parse_manifest():
-    meta = s1meta.parse_manifest(manifestfile=testmanifest)
+    meta = s1meta.parse_manifest(manifestfile=test_data['manifest'])
+    assert isinstance(meta, dict)
+
+
+def test_find_parse_manifest_zip():
+    meta = s1meta.find_parse_manifest(test_data['zip'])
     assert isinstance(meta, dict)
