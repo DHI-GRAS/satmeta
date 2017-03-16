@@ -1,9 +1,20 @@
 import logging
 
+import lxml.etree
 import shapely.geometry
 import dateutil.parser
 
 logger = logging.getLogger(__name__)
+
+
+def get_root(metadatafile=None, metadatastr=None):
+    if metadatafile:
+        root = lxml.etree.parse(metadatafile).getroot()
+    elif metadatastr:
+        root = lxml.etree.fromstring(metadatastr)
+    else:
+        raise ValueError('Either metadatafile or metadatastr must be specified.')
+    return root
 
 
 def _get_value(element, attrname=None, to_type=None):
