@@ -13,4 +13,4 @@ setup(
     sentinel_filesearch=sentinel_meta.scripts.filesearch:filesearch
     """,
     install_requires=[
-        'dateutil'])
+        'python-dateutil'])

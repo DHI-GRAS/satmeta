@@ -1,21 +1,15 @@
 import re
-import glob
 import os.path
 import datetime
-import zipfile
-import posixpath
 import logging
 import warnings
 
 import lxml.etree
 
+from . import metafile
 from .. import converters
 
 logger = logging.getLogger('sentinel_meta.s1.meta')
-
-
-class MetaDataError(Exception):
-    pass
 
 
 def dates_from_fname(fname, zero_time=False):
@@ -31,33 +25,6 @@ def dates_from_fname(fname, zero_time=False):
         raise ValueError('Could not find dates if format \'{}\' '
                 'in file name \'{}\'.'.format(fmt, fname))
     return [datetime.datetime.strptime(d, fmt) for d in dd]
-
-
-def find_manifest_in_SAFE(inSAFE):
-    """Find manifest in SAFE folder"""
-    pattern = os.path.join(inSAFE, 'manifest.safe')
-    try:
-        return glob.glob(pattern)[0]
-    except IndexError:
-        raise ValueError('No manifest file found by searching for \'{}\'.'
-                ''.format(pattern))
-
-
-def read_manifest_SAFE(inSAFE):
-    """Find and read manifest file in SAFE folder"""
-    manifest = find_manifest_in_SAFE(inSAFE)
-    with open(manifest) as f:
-        return f.read()
-
-
-def read_manifest_ZIP(zipfilepath):
-    try:
-        with zipfile.ZipFile(zipfilepath) as zf:
-            SAFEdir = zf.namelist()[0]
-            manifest = posixpath.join(SAFEdir, 'manifest.safe')
-            return zf.open(manifest).read()
-    except zipfile.BadZipfile as e:
-        raise MetaDataError('Unable to read zip file \'{}\': {}'.format(zipfilepath, str(e)))
 
 
 def get_platform_name(fname):
@@ -81,11 +48,16 @@ def xml_get_relativeOrbitNumber(root):
     return start
 
 
+def get_orbit_number(infile):
+    metadata = find_parse_manifest(infile)
+    return metadata['orbitNumber']
+
+
 def parse_manifest(manifestfile=None, manifeststr=None):
     if manifestfile:
-        root = lxml.etree.parse(manifestfile)
+        root = lxml.etree.parse(manifestfile).getroot()
     elif manifeststr:
-        root = lxml.etree.fromstring(manifeststr)
+        root = lxml.etree.fromstring(manifeststr).getroot()
     else:
         raise ValueError('Either manifestfile or manifeststr must be specified.')
     metadata = {
@@ -93,7 +65,7 @@ def parse_manifest(manifestfile=None, manifeststr=None):
             'relativeOrbitNumber': xml_get_relativeOrbitNumber(root),
             'startTime': converters.get_single_date(root, 'safe:startTime'),
             'stopTime': converters.get_single_date(root, 'safe:stopTime'),
-            'resource_name': converters.get_single(root, 'safe:resource', 'name'),
+            'resource_name': converters.get_instance(root, 'safe:resource', 'name'),
             'productType': converters.get_single(root, 's1sarl1:productType'),
             'polarizations': converters.get_all(root, 's1sarl1:transmitterReceiverPolarisation')}
     metadata['platform'] = get_platform_name(metadata['resource_name'])
@@ -102,12 +74,7 @@ def parse_manifest(manifestfile=None, manifeststr=None):
 
 def find_parse_manifest(infile):
     if infile.endswith('.SAFE'):
-        mstr = read_manifest_SAFE(infile)
+        mstr = metafile.read_manifest_SAFE(infile)
     elif infile.endswith('.zip'):
-        mstr = read_manifest_ZIP(infile)
+        mstr = metafile.read_manifest_ZIP(infile)
     return parse_manifest(manifeststr=mstr)
-
-
-def get_orbit_number(infile):
-    metadata = find_parse_manifest(infile)
-    return metadata['orbitNumber']

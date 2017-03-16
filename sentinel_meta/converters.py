@@ -16,6 +16,14 @@ def get_single(root, tagname, attrname=None):
         return results[0].text
 
 
+def get_instance(root, tagname, attrname=None, index=0):
+    result = root.findall('.//{}'.format(tagname), namespaces=root.nsmap)[index]
+    if attrname is not None:
+        return result.attrib[attrname]
+    else:
+        return result.text
+
+
 def get_all(root, tagname, attrname=None):
     results = root.findall('.//{}'.format(tagname), namespaces=root.nsmap)
     if attrname is not None:
