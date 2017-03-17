@@ -100,7 +100,7 @@ def metadata_matches(metadata, rel_orbit_numbers=None, aoi=None):
 
 
 def _filter_infile(infile, **kwargs):
-    metadata = meta.find_parse_manifest(infile)
+    metadata = meta.find_parse_metadata(infile)
     return metadata_matches(metadata, **kwargs)
 
 
@@ -125,7 +125,7 @@ def filter_input_files(infiles, start_date=None, end_date=None, rel_orbit_number
     num_cores = multiprocessing.cpu_count()
     njobs = min((num_cores, 4))
     infile_iter = tqdm(infiles, desc='input file filter', unit='input file')
-    mask = joblib.Parallel(n_jobs=4)(joblib.delayed(_filter_infile)(infile, **filterkw) for infile in infile_iter)
+    mask = joblib.Parallel(n_jobs=njobs)(joblib.delayed(_filter_infile)(infile, **filterkw) for infile in infile_iter)
 
     infiles = np.array(infiles, dtype='object')[mask].tolist()
     logger.debug('Number of files matching filtering criteria: {}'.format(len(infiles)))
