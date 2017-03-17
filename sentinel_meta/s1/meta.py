@@ -21,7 +21,7 @@ def dates_from_fname(fname, zero_time=False):
         fmt = '%Y%m%dt%H%M%S'
     dd = re.findall(regex, fname.lower())
     if not dd:
-        raise ValueError('Could not find dates if format \'{}\' '
+        raise ValueError('Could not find dates of format \'{}\' '
                 'in file name \'{}\'.'.format(fmt, fname))
     return [datetime.datetime.strptime(d, fmt) for d in dd]
 
@@ -45,11 +45,6 @@ def xml_get_relativeOrbitNumber(root):
     if start != stop:
         warnings.warn('relativeOrbitNumber range from {} to {}. Only returning {}'.format(start, stop, start))
     return start
-
-
-def get_orbit_number(infile):
-    metadata = find_parse_metadata(infile)
-    return metadata['orbitNumber']
 
 
 def parse_metadata(metadatafile=None, metadatastr=None):
