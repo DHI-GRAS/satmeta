@@ -57,7 +57,8 @@ def parse_metadata(metadatafile=None, metadatastr=None):
             'stopTime': converters.get_single_date(root, 'safe:stopTime'),
             'resource_name': converters.get_instance(root, 'safe:resource', 'name', index=0),
             'productType': _get_single('s1sarl1:productType'),
-            'polarizations': converters.get_all(root, 's1sarl1:transmitterReceiverPolarisation')}
+            'polarizations': converters.get_all(root, 's1sarl1:transmitterReceiverPolarisation'),
+            'pass': _get_single('s1:pass')}
     metadata['platform'] = get_platform_name(metadata['resource_name'])
     return metadata
 

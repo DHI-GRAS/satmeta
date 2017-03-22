@@ -21,3 +21,9 @@ def test_parse_metadata():
 def test_find_parse_metadata_zip():
     meta = s1meta.find_parse_metadata(test_data['zip'])
     assert isinstance(meta, dict)
+
+
+def test_meta_keys():
+    meta = s1meta.parse_metadata(metadatafile=test_data['manifest'])
+    for key in ['pass']:
+        assert key in meta
