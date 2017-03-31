@@ -33,6 +33,13 @@ def get_tile_name(tile_ID):
         raise ValueError('Unable to get tile name from ID \'{}\'.'.format(tile_ID))
 
 
+def get_sensor_ID(product_name):
+    try:
+        return re.search('^S2[AB]', product_name).group(0)
+    except AttributeError:
+        raise ValueError('Unable to get sensor ID from product name \'{}\'.'.format(product_name))
+
+
 def parse_granule_metadata(metadatafile=None, metadatastr=None):
     """Parse S2 GRANULE meta data from file or string"""
     root = converters.get_root(metadatafile, metadatastr)
@@ -64,10 +71,11 @@ def parse_metadata(metadatafile=None, metadatastr=None):
             'quantification_value': _get_single('QUANTIFICATION_VALUE', to_type=int),
             'reflectance_conversion': _get_single('Reflectance_Conversion/U', to_type=float),
             'irradiance_values': converters.get_all(root, 'Reflectance_Conversion/Solar_Irradiance_List/SOLAR_IRRADIANCE', to_type=float)}
+    metadata['sensor_ID'] = get_sensor_ID(metadata['productName'])
     return metadata
 
 
-def find_parse_metadata(infile, check_granules=False):
+def find_parse_metadata(infile, check_granules=False, flatten_single_granule=False):
     """Find and parse product and granule meta data in SAFE or zip file
 
     Parameters
@@ -76,6 +84,8 @@ def find_parse_metadata(infile, check_granules=False):
         path to input file SAFE or zip
     check_granules : bool
         check whether granules were loaded
+    flatten_single_granule : bool
+        merge granule metadata into metadata dictionary
 
     Returns
     -------
@@ -88,9 +98,17 @@ def find_parse_metadata(infile, check_granules=False):
     else:
         raise ValueError('This function works only for .SAFE or .zip.')
     metadata = parse_metadata(metadatastr=mstr)
-    metadata['granules'] = find_parse_granule_metadata(infile)
-    if check_granules and not metadata['granules']:
+    gmeta = find_parse_granule_metadata(infile)
+    if check_granules and not gmeta:
         raise ValueError('No granule metadata found in file \'{}\'.'.format(infile))
+
+    if flatten_single_granule:
+        if len(gmeta) != 1:
+            raise ValueError('Cannot merge granule metadata because there are '
+                    'several granules in product: {}'.format(set(gmeta)))
+        metadata.update(gmeta)
+    else:
+        metadata['granules'] = gmeta
     return metadata
 
 

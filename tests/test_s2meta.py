@@ -35,3 +35,11 @@ def test_find_parse_metadata():
             assert isinstance(meta, dict)
             assert 'granules' in meta
             assert test_tile_ID[key] in meta['granules']
+
+
+def test_sensor_ID():
+    for key in ['new', 'old']:
+        for fmt in ['SAFE', 'zip']:
+            infile = test_data[key][fmt]
+            meta = s2meta.find_parse_metadata(infile, check_granules=True)
+            assert meta['sensor_ID'] == 'S2A'
