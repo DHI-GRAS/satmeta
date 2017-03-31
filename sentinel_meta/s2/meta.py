@@ -28,7 +28,7 @@ def get_geopositions(root):
 def get_tile_name(tile_ID):
     """Get tile name (TZZAAA) from tile ID or file name"""
     try:
-        return re.search('T\d{2}[A-Z]{3}', tile_ID).group(0)
+        return re.search('(?<=T)\d{2}[A-Z]{3}', tile_ID).group(0)
     except AttributeError:
         raise ValueError('Unable to get tile name from ID \'{}\'.'.format(tile_ID))
 

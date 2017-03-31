@@ -28,5 +28,5 @@ test_data = {
 
 
 test_tile_ID = {
-        'new': 'T33VUC',
-        'old': 'T33UVB'}
+        'new': '33VUC',
+        'old': '33UVB'}
