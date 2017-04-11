@@ -51,7 +51,7 @@ def parse_metadata(metadatafile=None, metadatastr=None):
     root = converters.get_root(metadatafile, metadatastr)
     _get_single = functools.partial(converters.get_single, root)
     metadata = {
-            'footPrint': converters.get_single_polygon(root, 'gml:coordinates'),
+            'footPrint': converters.get_single_polygon_yx(root, 'gml:coordinates'),
             'relativeOrbitNumber': xml_get_relativeOrbitNumber(root),
             'startTime': converters.get_single_date(root, 'safe:startTime'),
             'stopTime': converters.get_single_date(root, 'safe:stopTime'),

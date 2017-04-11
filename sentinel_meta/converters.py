@@ -53,6 +53,10 @@ def _parse_coordinates_str(cs):
     return [tuple(map(float, s.split(','))) for s in cs.split()]
 
 
+def _parse_coordinates_str_yx(cs):
+    return [tuple(map(float, s.split(',')[::-1])) for s in cs.split()]
+
+
 def _coords_to_polygon(coords):
     return shapely.geometry.shape(dict(type='Polygon', coordinates=[coords]))
 
@@ -63,5 +67,15 @@ def parse_coords(coordinates_str):
     return _coords_to_polygon(coords)
 
 
+def parse_coords_yx(coordinates_str):
+    """Parse GeoJSON-like coordinates string as a Polygon"""
+    coords = _parse_coordinates_str_yx(coordinates_str)
+    return _coords_to_polygon(coords)
+
+
 def get_single_polygon(root, tagname):
     return get_single(root, tagname, to_type=parse_coords)
+
+
+def get_single_polygon_yx(root, tagname):
+    return get_single(root, tagname, to_type=parse_coords_yx)
