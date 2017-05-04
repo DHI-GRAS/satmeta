@@ -13,7 +13,7 @@ from . import meta
 logger = logging.getLogger('sentinel_meta.s1.filesearch')
 
 
-def find_input_files(indir, formats=['zip', 'SAFE']):
+def find_input_files(indir, formats=['zip', 'SAFE'], ignore_empty=False):
     """Find sets of input files for given extensions
 
     Parameters
@@ -22,6 +22,8 @@ def find_input_files(indir, formats=['zip', 'SAFE']):
         path to directory to search
     formats : list of str in ['zip', 'SAFE']
         file formats to find
+    ignore_empty : bool
+        ignore empty files
     """
     # file patterns to search for in wholedir
     patterns = {
@@ -34,6 +36,8 @@ def find_input_files(indir, formats=['zip', 'SAFE']):
         logger.debug('File search pattern is \'{}\'.'.format(filepattern))
         infiles_found = glob.glob(filepattern)
         logger.info('Found {} files of format {}'.format(len(infiles_found), fmtkey))
+        if ignore_empty:
+            infiles_found = filter(os.path.getsize, infiles_found)
         if infiles_found:
             filesets.append(infiles_found)
     return filesets[0]
