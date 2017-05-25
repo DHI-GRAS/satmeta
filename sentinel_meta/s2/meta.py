@@ -25,7 +25,7 @@ def get_geopositions(root):
     return geopos
 
 
-def get_tile_name(tile_ID):
+def tile_name_from_tile_ID(tile_ID):
     """Get tile name (TZZAAA) from tile ID or file name"""
     try:
         return re.search('(?<=T)\d{2}[A-Z]{3}', tile_ID).group(0)
@@ -33,11 +33,18 @@ def get_tile_name(tile_ID):
         raise ValueError('Unable to get tile name from ID \'{}\'.'.format(tile_ID))
 
 
-def get_sensor_ID(product_name):
+def sensor_ID_from_product_name(product_name):
     try:
         return re.search('^S2[AB]', product_name).group(0)
     except AttributeError:
         raise ValueError('Unable to get sensor ID from product name \'{}\'.'.format(product_name))
+
+
+def sensor_ID_from_spacecraft_name(spacecraft_name):
+    try:
+        return 'S' + re.search('^Sentinel-(2[AB])', spacecraft_name).group(1)
+    except AttributeError:
+        raise ValueError('Unable to get sensor ID from spacecraft name \'{}\'.'.format(spacecraft_name))
 
 
 def parse_granule_metadata(metadatafile=None, metadatastr=None):
@@ -54,7 +61,7 @@ def parse_granule_metadata(metadatafile=None, metadatastr=None):
             'cloudCoverPercent': _get_single('CLOUDY_PIXEL_PERCENTAGE', to_type=float),
             'image_size': get_sizes(root),
             'image_geoposition': get_geopositions(root)}
-    metadata['tile_name'] = get_tile_name(metadata['tile_ID'])
+    metadata['tile_name'] = tile_name_from_tile_ID(metadata['tile_ID'])
     return metadata
 
 
@@ -71,7 +78,7 @@ def parse_metadata(metadatafile=None, metadatastr=None):
             'quantification_value': _get_single('QUANTIFICATION_VALUE', to_type=int),
             'reflectance_conversion': _get_single('Reflectance_Conversion/U', to_type=float),
             'irradiance_values': converters.get_all(root, 'Reflectance_Conversion/Solar_Irradiance_List/SOLAR_IRRADIANCE', to_type=float)}
-    metadata['sensor_ID'] = get_sensor_ID(metadata['productName'])
+    metadata['sensor_ID'] = sensor_ID_from_spacecraft_name(metadata['spacecraft'])
     return metadata
 
 
