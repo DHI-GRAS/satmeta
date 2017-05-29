@@ -15,7 +15,8 @@ def find_metafile_in_SAFE(inSAFE):
         return 'INSPIRE' not in os.path.basename(fn)
     pattern = os.path.join(inSAFE, '*.xml')
     try:
-        return filter(_filterfunc, glob.glob(pattern))[0]
+        names = glob.glob(pattern)
+        return list(filter(_filterfunc, names))[0]
     except IndexError:
         raise ValueError('No metafile file found in folder \'{}\''.format(inSAFE))
 
@@ -31,7 +32,7 @@ def find_metafile_in_zip(names):
     def _filterfunc(s):
         return re.match('[\w_\.]*?\.SAFE/[\w_\.]*?\.xml', s) and 'INSPIRE' not in s
     try:
-        return filter(_filterfunc, names)[0]
+        return list(filter(_filterfunc, names))[0]
     except IndexError:
         raise RuntimeError('No metadata file found among zip file names.')
 
@@ -55,7 +56,7 @@ def _granule_metafiles_in_zip_names(names):
     """Find granule metafiles in list of zip member namers"""
     def _filterfunc(s):
         return re.match('([\w_\.]*?\.SAFE)/(GRANULE)/([\w_\.]*?)/([\w_\.]*?\.xml)', s) is not None
-    return filter(_filterfunc, names)
+    return list(filter(_filterfunc, names))
 
 
 def read_granule_metafiles_ZIP(zipfilepath):
