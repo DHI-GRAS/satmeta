@@ -1,6 +1,6 @@
 import sentinel_meta.s2.metafile as s2metafile
 
-from data.s2 import test_data
+from .data.s2 import test_data
 
 
 def test_read_granule_metafiles_ZIP():
