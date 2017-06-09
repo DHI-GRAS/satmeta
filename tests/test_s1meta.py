@@ -1,5 +1,5 @@
-import sentinel_meta.s1.meta as s1meta
-import sentinel_meta.s1.metafile as s1metafile
+import satmeta.s1.meta as s1meta
+import satmeta.s1.metafile as s1metafile
 
 from .data.s1 import test_data
 

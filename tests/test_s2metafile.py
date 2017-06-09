@@ -1,4 +1,4 @@
-import sentinel_meta.s2.metafile as s2metafile
+import satmeta.s2.metafile as s2metafile
 
 from .data.s2 import test_data
 
