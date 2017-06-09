@@ -1,5 +1,5 @@
-# sentinel_meta
+# satmeta
 
-[![travis](https://travis-ci.org/DHI-GRAS/sentinel_meta.svg?branch=master)](https://travis-ci.org/DHI-GRAS/sentinel_meta)
+[![travis](https://travis-ci.org/DHI-GRAS/satmeta.svg?branch=master)](https://travis-ci.org/DHI-GRAS/satmeta)
 
 Sentinel Meta Data
