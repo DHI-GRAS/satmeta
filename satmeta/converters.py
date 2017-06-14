@@ -79,3 +79,15 @@ def get_single_polygon(root, tagname):
 
 def get_single_polygon_yx(root, tagname):
     return get_single(root, tagname, to_type=parse_coords_yx)
+
+
+def trans_shape_to_bounds(transform, shape):
+    """Compute bounds from transform (Affine) and shape (width, height)
+
+    Returns
+    -------
+    tuple : left bottom right top
+    """
+    left, top = transform * (0, 0)
+    right, bottom = transform * shape
+    return (left, bottom, right, top)
