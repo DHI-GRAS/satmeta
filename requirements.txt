@@ -1,3 +1,5 @@
 python-dateutil
 lxml
 shapely
+affine
+rasterio
