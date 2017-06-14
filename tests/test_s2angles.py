@@ -17,13 +17,15 @@ def test_parse_angles_shape():
     assert adict['Sun']['Zenith'].shape == (23, 23)
 
 
-def test_get_angles():
+def test_get_angles_with_gref():
     import rasterio.crs
     import affine
     infile = test_data['new']['granule_xml']
     root = converters.get_root(infile)
-    group = s2angles.generate_group_name(angle='Sun', angle_dir='Zenith')
-    angles, transform, crs = s2angles.get_angles(root, group, meta=None)
+    group = s2angles.generate_group_name(
+            angle='Sun', angle_dir='Zenith', bandId=0)
+    angles, transform, crs = s2angles.get_angles_with_gref(
+            root, group, meta=None)
     assert angles.shape == (23, 23)
     assert angles.sum() != 0
     assert isinstance(transform, affine.Affine)
