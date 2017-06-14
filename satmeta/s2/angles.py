@@ -66,11 +66,9 @@ def get_values_merged_detectors(root, group):
 
     pargroup_detector = pargroup + '[@detectorId="{detectorId}"]'
     pargroup_detector_fmt = posixpath.join(pargroup_detector, child)
-    print('Parent group format: \'{}\''.format(pargroup_detector_fmt))
 
     aa = []
     for e in ee:
-        print(e)
         group_detector = pargroup_detector_fmt.format(**e.attrib)
         a = get_values(root, group_detector)
         aa.append(a)
