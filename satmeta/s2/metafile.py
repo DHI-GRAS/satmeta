@@ -47,7 +47,6 @@ def read_metafile_ZIP(zipfilepath):
 
 
 def find_granule_metafiles_in_SAFE(inSAFE):
-
     pattern = os.path.join(inSAFE, 'GRANULE', '*', '*.xml')
     return sorted(glob.glob(pattern))
 
