@@ -10,7 +10,8 @@ try:
     no_rasterio = False
 except ImportError:
     no_rasterio = True
-    pytestmark = pytest.mark.skipif(no_rasterio)
+    pytestmark = pytest.mark.skipif(
+            no_rasterio, reason='rasterio not available')
 
 
 def test_parse_angles_keys():
