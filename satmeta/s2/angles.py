@@ -2,7 +2,6 @@ import posixpath
 from collections import defaultdict
 
 import numpy as np
-import rasterio.crs
 
 from . import meta as s2meta
 from . import utils as s2utils
@@ -116,6 +115,8 @@ def get_angles_with_gref(root, group, meta=None):
     -------
     data, transform, CRS
     """
+    import rasterio.crs
+
     if meta is None:
         meta = s2meta.parse_granule_metadata_xml(root)
     pos = meta['image_geoposition'][10]
