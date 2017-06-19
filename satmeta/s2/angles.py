@@ -185,7 +185,7 @@ def get_resample_angles(root, group, dst_res=None,
                 'must both be specified.')
 
     return utils.resample(
-            angles_raw,
+            angles_raw.astype('float32'),
             src_transform=src_transform,
             src_crs=src_crs,
             dst_transform=dst_transform,

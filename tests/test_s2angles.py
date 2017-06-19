@@ -19,6 +19,7 @@ def test_parse_angles_keys():
     adict = s2angles.parse_angles(infile)
     assert set(adict) == {'Sun', 'Viewing_Incidence'}
     assert set(adict['Sun']) == {'Zenith', 'Azimuth'}
+    assert adict['Sun']['Zenith'].any()
 
 
 def test_parse_angles_shape():
@@ -49,3 +50,4 @@ def test_parse_resample_angles():
             angles=['Sun'], angle_dirs=['Zenith'])
     a = adict['Sun']['Zenith']
     assert a.shape == (1830, 1830)
+    assert a.any()
