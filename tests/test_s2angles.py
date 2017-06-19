@@ -37,7 +37,7 @@ def test_get_angles_with_gref():
     angles, transform, crs = s2angles.get_angles_with_gref(
             root, group, meta=None)
     assert angles.shape == (23, 23)
-    assert angles.sum() != 0
+    assert angles.any()
     assert isinstance(transform, affine.Affine)
     assert isinstance(crs, rasterio.crs.CRS)
 
