@@ -243,7 +243,7 @@ def parse_resample_angles(
         angles=_all_angles,
         angle_dirs=_all_dirs,
         bandId=0,
-        **kwargs):
+        **resample_kwargs):
     """Parse angles from GRANULE metadata and resample
 
     Parameters
@@ -262,12 +262,13 @@ def parse_resample_angles(
         use this band to retrieve
         viewing angles
         default: 0
-    **kwargs : additional keyword arguments
+    **resample_kwargs : additional keyword arguments
         passed to `get_resample_angles`
 
     Returns
     -------
-    ndarray : angles
+    nested dict : angles > angles_dirs > ndarray
+        angles dictionary
     """
     root = converters.get_root(metadatafile, metadatastr)
     meta = s2meta.parse_granule_metadata_xml(root)
@@ -277,5 +278,5 @@ def parse_resample_angles(
         for angle_dir in angle_dirs:
             group = generate_group_name(angle, angle_dir, bandId=bandId)
             angles_data[angle][angle_dir] = get_resample_angles(
-                    root, group, meta=meta, **kwargs)
+                    root, group, meta=meta, **resample_kwargs)
     return angles_data

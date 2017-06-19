@@ -1,4 +1,5 @@
 import re
+import os.path
 import functools
 
 from . import metafile
@@ -35,7 +36,7 @@ def _get_geopositions(root):
     return geopos
 
 
-def generate_image_transform(image_geoposition):
+def _generate_image_transform(image_geoposition):
     """Generate image transform (affine.Affine) from image_geoposition dict"""
     image_transform = {}
     for res in image_geoposition:
@@ -44,7 +45,7 @@ def generate_image_transform(image_geoposition):
     return image_transform
 
 
-def generate_image_shape(image_size):
+def _generate_image_shape(image_size):
     image_shape = {}
     for res in image_size:
         image_shape[res] = [
@@ -52,7 +53,7 @@ def generate_image_shape(image_size):
     return image_shape
 
 
-def generate_image_bounds(image_transform, image_shape):
+def _generate_image_bounds(image_transform, image_shape):
     """left bottom right top"""
     image_bounds = {}
     for res in image_transform:
@@ -61,13 +62,22 @@ def generate_image_bounds(image_transform, image_shape):
     return image_bounds
 
 
-def tile_name_from_tile_ID(tile_ID):
-    """Get tile name (TZZAAA) from tile ID or file name"""
+def _tile_name_from_tile_ID(tile_ID):
+    """Get tile name (ZZAAA) from tile ID or file name"""
     try:
         return re.search('(?<=T)\d{2}[A-Z]{3}', tile_ID).group(0)
     except AttributeError:
         raise ValueError(
                 'Unable to get tile name from ID \'{}\'.'.format(tile_ID))
+
+
+def find_tile_name(fname):
+    fname = os.path.basename(fname)
+    try:
+        return re.search('\d{2}[A-Z]{3}', fname).group(0)
+    except AttributeError:
+        raise ValueError(
+                'Unable to get tile name from \'{}\'.'.format(fname))
 
 
 def sensor_ID_from_product_name(product_name):
@@ -115,11 +125,11 @@ def parse_granule_metadata_xml(root):
             'cloudCoverPercent': _get_single('CLOUDY_PIXEL_PERCENTAGE', to_type=float),
             'image_size': _get_sizes(root),
             'image_geoposition': _get_geopositions(root)}
-    metadata['tile_name'] = tile_name_from_tile_ID(metadata['tile_ID'])
-    metadata['image_transform'] = generate_image_transform(
+    metadata['tile_name'] = _tile_name_from_tile_ID(metadata['tile_ID'])
+    metadata['image_transform'] = _generate_image_transform(
             metadata['image_geoposition'])
-    metadata['image_shape'] = generate_image_shape(metadata['image_size'])
-    metadata['image_bounds'] = generate_image_bounds(
+    metadata['image_shape'] = _generate_image_shape(metadata['image_size'])
+    metadata['image_bounds'] = _generate_image_bounds(
             metadata['image_transform'], metadata['image_shape'])
     return metadata
 
