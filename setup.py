@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='satmeta',
-    version='0.5',
+    version='0.6',
     description='Satellite Meta Data Extraction',
     author='Jonas Solvsteen',
     author_email='josl@dhi-gras.com',
