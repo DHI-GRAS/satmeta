@@ -10,8 +10,17 @@ try:
     no_rasterio = False
 except ImportError:
     no_rasterio = True
-    pytestmark = pytest.mark.skipif(
-            no_rasterio, reason='rasterio not available')
+skip_rasterio = pytest.mark.skipif(
+        no_rasterio, reason='rasterio not available')
+
+
+try:
+    import imresize
+    no_imresize = False
+except ImportError:
+    no_imresize = True
+skip_imresize = pytest.mark.skipif(
+        no_imresize, reason='imresize not available')
 
 
 def test_parse_angles_keys():
@@ -28,6 +37,7 @@ def test_parse_angles_shape():
     assert adict['Sun']['Zenith'].shape == (23, 23)
 
 
+@skip_rasterio
 def test_get_angles_with_gref():
     import rasterio.crs
     import affine
@@ -43,10 +53,24 @@ def test_get_angles_with_gref():
     assert isinstance(crs, rasterio.crs.CRS)
 
 
-def test_parse_resample_angles():
+@skip_rasterio
+def test_parse_resample_angles_rasterio():
     infile = test_data['new']['granule_xml']
     adict = s2angles.parse_resample_angles(
             infile, dst_res=60,
+            resample_method='rasterio',
+            angles=['Sun'], angle_dirs=['Zenith'])
+    a = adict['Sun']['Zenith']
+    assert a.shape == (1830, 1830)
+    assert a.any()
+
+
+@skip_imresize
+def test_parse_resample_angles_imresize():
+    infile = test_data['new']['granule_xml']
+    adict = s2angles.parse_resample_angles(
+            infile, dst_res=60,
+            resample_method='imresize',
             angles=['Sun'], angle_dirs=['Zenith'])
     a = adict['Sun']['Zenith']
     assert a.shape == (1830, 1830)

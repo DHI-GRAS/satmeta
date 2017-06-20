@@ -128,7 +128,7 @@ def get_angles_with_gref(root, group, meta=None):
     return angles_raw, src_transform, src_crs
 
 
-def get_resample_angles(root, group, dst_res=None,
+def get_resample_angles_rasterio(root, group, dst_res=None,
         dst_transform=None, dst_crs=None, dst_shape=None,
         meta=None):
     """Parse angles and resample to dst_res
@@ -184,13 +184,45 @@ def get_resample_angles(root, group, dst_res=None,
                 '`dst_transform` and `dst_shape` '
                 'must both be specified.')
 
+    angles_filled = np.ma.masked_invalid(angles_raw).filled(999)
+
     return utils.resample(
-            angles_raw.astype('float32'),
+            angles_filled,
             src_transform=src_transform,
             src_crs=src_crs,
             dst_transform=dst_transform,
             dst_crs=dst_crs,
-            dst_shape=dst_shape)
+            dst_shape=dst_shape,
+            resampling=0)
+
+
+def get_resample_angles_imresize(root, group,
+        dst_res=None, dst_shape=None, meta=None):
+    """Parse angles and resample to dst_res
+
+    Parameters
+    ----------
+    root : lxml root
+        root of granule metadata XML doc
+    group : str
+        path to angles tag
+    dst_res : int
+        target resolution
+    """
+    from scipy.misc import imresize
+
+    if meta is None:
+        meta = s2meta.parse_granule_metadata_xml(root)
+    angles_raw = get_angles_any_type(root, group)
+
+    if dst_res is not None:
+        dst_shape = meta['image_shape'][dst_res]
+    elif dst_shape is None:
+        raise ValueError(
+                'You must either specify `dst_shape` '
+                'or choose a predefined resolution ({}).'
+                ''.format(s2meta._all_res))
+    return imresize(angles_raw, dst_shape, interp='bilinear', mode='F')
 
 
 def generate_group_name(angle, angle_dir, bandId):
@@ -243,6 +275,8 @@ def parse_resample_angles(
         angles=_all_angles,
         angle_dirs=_all_dirs,
         bandId=0,
+        dst_res=None,
+        resample_method='imresize',
         **resample_kwargs):
     """Parse angles from GRANULE metadata and resample
 
@@ -262,14 +296,25 @@ def parse_resample_angles(
         use this band to retrieve
         viewing angles
         default: 0
+    resample_method : str in ['imresize', 'rasterio']
+        method to use for resampling
+        either based on scipy.misc.imresize
+        or based on rasterio.warp.reproject
     **resample_kwargs : additional keyword arguments
-        passed to `get_resample_angles`
+        passed to the resampling function
 
     Returns
     -------
     nested dict : angles > angles_dirs > ndarray
         angles dictionary
     """
+    if resample_method == 'imresize':
+        _resample_func = get_resample_angles_imresize
+    elif resample_method == 'rasterio':
+        _resample_func = get_resample_angles_rasterio
+    else:
+        raise ValueError('resample_method must be `imresize` or `rasterio`.')
+
     root = converters.get_root(metadatafile, metadatastr)
     meta = s2meta.parse_granule_metadata_xml(root)
 
@@ -277,6 +322,6 @@ def parse_resample_angles(
     for angle in angles:
         for angle_dir in angle_dirs:
             group = generate_group_name(angle, angle_dir, bandId=bandId)
-            angles_data[angle][angle_dir] = get_resample_angles(
-                    root, group, meta=meta, **resample_kwargs)
+            angles_data[angle][angle_dir] = _resample_func(
+                    root, group, meta=meta, dst_res=dst_res, **resample_kwargs)
     return angles_data
