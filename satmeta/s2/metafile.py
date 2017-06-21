@@ -46,6 +46,13 @@ def read_metafile_ZIP(zipfilepath):
         raise MetaDataError('Unable to read zip file \'{}\': {}'.format(zipfilepath, str(e)))
 
 
+def find_read_metafile(input_path):
+    if os.path.isdir(input_path):
+        return read_metafile_SAFE(input_path)
+    else:
+        return read_metafile_ZIP(input_path)
+
+
 def find_granule_metafiles_in_SAFE(inSAFE):
     pattern = os.path.join(inSAFE, 'GRANULE', '*', '*.xml')
     return sorted(glob.glob(pattern))
