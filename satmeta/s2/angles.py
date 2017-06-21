@@ -113,15 +113,13 @@ def get_angles_with_gref(root, group, meta=None):
 
     Returns
     -------
-    data, transform, CRS
+    data, transform, crs dict
     """
-    import rasterio.crs
-
     if meta is None:
         meta = s2meta.parse_granule_metadata_xml(root)
     pos = meta['image_geoposition'][10]
     # assume that the CRS of the angles is the same as image CRS
-    src_crs = rasterio.crs.CRS({'init': meta['projection']})
+    src_crs = {'init': meta['projection']}
     res = get_res(root, group)
     src_transform = s2utils.res_pos_to_affine(res, pos)
     angles_raw = get_angles_any_type(root, group)
@@ -150,6 +148,11 @@ def get_resample_angles_rasterio(root, group, dst_res=None,
         meta = s2meta.parse_granule_metadata_xml(root)
     angles_raw, src_transform, src_crs = get_angles_with_gref(
             root, group, meta=meta)
+
+    # convert to rasterio CRS
+    src_crs = rasterio.crs.CRS(src_crs)
+    if dst_crs is not None:
+        dst_crs = rasterio.crs.CRS(dst_crs)
 
     if dst_res is not None:
         try:
@@ -259,14 +262,12 @@ def parse_angles(
     ndarray : angles
     """
     root = converters.get_root(metadatafile, metadatastr)
-    meta = s2meta.parse_granule_metadata_xml(root)
 
     angles_data = defaultdict(dict)
     for angle in angles:
         for angle_dir in angle_dirs:
             group = generate_group_name(angle, angle_dir, bandId=bandId)
-            angles_data[angle][angle_dir], _, _ = (
-                    get_angles_with_gref(root, group, meta=meta))
+            angles_data[angle][angle_dir] = get_angles_any_type(root, group)
     return angles_data
 
 

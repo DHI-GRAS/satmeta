@@ -37,9 +37,7 @@ def test_parse_angles_shape():
     assert adict['Sun']['Zenith'].shape == (23, 23)
 
 
-@skip_rasterio
 def test_get_angles_with_gref():
-    import rasterio.crs
     import affine
     infile = test_data['new']['granule_xml']
     root = converters.get_root(infile)
@@ -50,7 +48,7 @@ def test_get_angles_with_gref():
     assert angles.shape == (23, 23)
     assert angles.any()
     assert isinstance(transform, affine.Affine)
-    assert isinstance(crs, rasterio.crs.CRS)
+    assert isinstance(crs, dict)
 
 
 @skip_rasterio
