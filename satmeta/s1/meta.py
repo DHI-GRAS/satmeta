@@ -8,7 +8,7 @@ import warnings
 from . import metafile
 from .. import converters
 
-logger = logging.getLogger('sentinel_meta.s1.meta')
+logger = logging.getLogger(__name__)
 
 
 def dates_from_fname(fname, zero_time=False):
