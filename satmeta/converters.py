@@ -15,6 +15,8 @@ def get_root(metadatafile=None, metadatastr=None):
             metadatastr = metadatastr.encode()
         except AttributeError:
             pass
+        except UnicodeDecodeError:
+            pass
         root = lxml.etree.fromstring(metadatastr)
     else:
         raise ValueError('Either metadatafile or metadatastr must be specified.')
