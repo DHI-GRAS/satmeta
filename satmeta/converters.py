@@ -11,6 +11,10 @@ def get_root(metadatafile=None, metadatastr=None):
     if metadatafile:
         root = lxml.etree.parse(metadatafile).getroot()
     elif metadatastr:
+        try:
+            metadatastr = metadatastr.encode()
+        except AttributeError:
+            pass
         root = lxml.etree.fromstring(metadatastr)
     else:
         raise ValueError('Either metadatafile or metadatastr must be specified.')
@@ -31,7 +35,9 @@ def _get_value(element, attrname=None, to_type=None):
 def get_single(root, tagname, attrname=None, to_type=None):
     results = root.findall('.//{}'.format(tagname), namespaces=root.nsmap)
     if len(results) != 1:
-        raise ValueError('Expected to find a single instance of tag \'{}\'. Found {}.'.format(tagname, len(results)))
+        raise ValueError(
+                'Expected to find a single instance of tag \'{}\'. '
+                'Found {}.'.format(tagname, len(results)))
     return _get_value(results[0], attrname=attrname, to_type=to_type)
 
 
