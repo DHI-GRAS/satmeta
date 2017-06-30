@@ -38,6 +38,7 @@ def meta_as_geopandas_parallel(infiles):
             logger.warn(
                     'Reading metadata from \'%s\' failed with error \'%s\'.',
                     infile, gs)
+            continue
         gss_good.append(gs)
     return merge_geoseries(gss_good)
 
