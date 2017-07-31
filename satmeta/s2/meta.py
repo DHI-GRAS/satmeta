@@ -113,9 +113,9 @@ def parse_granule_metadata_xml(root):
     _get_single = functools.partial(converters.get_single, root)
     metadata = {
             'tile_ID': _get_single('TILE_ID'),
-            'sun_senith': _get_single('Mean_Sun_Angle/ZENITH_ANGLE', to_type=float),
+            'sun_zenith': _get_single('Mean_Sun_Angle/ZENITH_ANGLE', to_type=float),
             'sun_azimuth': _get_single('Mean_Sun_Angle/AZIMUTH_ANGLE', to_type=float),
-            'sensor_senith': converters.get_all(root,
+            'sensor_zenith': converters.get_all(root,
                 'Mean_Viewing_Incidence_Angle_List/Mean_Viewing_Incidence_Angle/ZENITH_ANGLE',
                 to_type=float),
             'sensor_azimuth': converters.get_all(root,
