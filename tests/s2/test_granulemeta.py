@@ -1,6 +1,6 @@
 import satmeta.s2.meta as s2meta
 
-from .data.s2 import test_data
+from .data import test_data
 
 
 def test_image_shape():

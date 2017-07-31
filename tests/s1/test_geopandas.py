@@ -1,6 +1,6 @@
 import pytest
 
-from .data.s1 import test_data
+from .data import test_data
 
 pexpect = pytest.importorskip('geopandas')
 

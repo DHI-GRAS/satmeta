@@ -1,7 +1,7 @@
 import satmeta.s2.meta as s2meta
 
-from .data.s2 import test_data
-from .data.s2 import test_tile_ID
+from .data import test_data
+from .data import test_tile_ID
 
 
 def test_parse_metadata():

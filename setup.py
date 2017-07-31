@@ -6,7 +6,8 @@ setup(
     description='Satellite Meta Data Extraction',
     author='Jonas Solvsteen',
     author_email='josl@dhi-gras.com',
-    packages=find_packages(),
+    packages=find_packages('src'),
+    package_dir={'': 'src'},
     install_requires=[
         'python-dateutil',
         'lxml', 'shapely'])

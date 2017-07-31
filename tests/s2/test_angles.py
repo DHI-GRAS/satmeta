@@ -3,7 +3,7 @@ import pytest
 import satmeta.s2.angles as s2angles
 from satmeta import converters
 
-from .data.s2 import test_data
+from .data import test_data
 
 try:
     import rasterio

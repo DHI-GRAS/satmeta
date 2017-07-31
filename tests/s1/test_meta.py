@@ -1,7 +1,7 @@
 import satmeta.s1.meta as s1meta
 import satmeta.s1.metafile as s1metafile
 
-from .data.s1 import test_data
+from .data import test_data
 
 
 def test_find_manifest_in_SAFE():
