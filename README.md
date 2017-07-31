@@ -11,10 +11,11 @@ Sentinel Meta Data
 python setup.py install
 ```
 
-### Sentinel 2 Sun and Viewing Incidence angles
+### Sentinel 2 Sun and Viewing Incidence angles (2D)
 
-The `satmeta.s2.angles` module has functions for parsing Sentinel 2
-Sun and Viewing Incidence angles. These come on 5000 m resolution grids.
+The `satmeta.s2.angles_2d` module has functions for parsing Sentinel 2
+Sun and Viewing Incidence angles in 2D. These come on 5000 m resolution grids.
+
 There are functions to resample these grids to any other resolution,
 either using `scipy` and `PIL` (the `scipy.misc.imresize` function) or 
 `rasterio.warp.reproject`.
@@ -26,11 +27,11 @@ on Python 3.6.
 So depending on your system, install the dependencies, preferably with `conda`:
 
 ```
-conda install scipy pil
+conda install scipy pil  # Python 2
 ```
 
 or
 
 ```
-conda install rasterio
+conda install rasterio  # Python 3
 ```
