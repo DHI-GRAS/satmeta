@@ -26,12 +26,12 @@ def dates_from_fname(fname, zero_time=False):
     return [datetime.datetime.strptime(d, fmt) for d in dd]
 
 
-def get_platform_name(fname):
+def get_spacecraft_name(fname):
     fname = os.path.basename(fname)
     try:
         return re.match('(^S\d[AB])', fname).group()
     except AttributeError:
-        raise ValueError('Unable to get platform name from fname \'{}.\''.format(fname))
+        raise ValueError('Unable to get spacecraft name from fname \'{}.\''.format(fname))
 
 
 def get_product_date(fname):
@@ -39,11 +39,12 @@ def get_product_date(fname):
     return dates_from_fname(fname)[0].date()
 
 
-def xml_get_relativeOrbitNumber(root):
-    start = int(converters.get_single(root, 'safe:relativeOrbitNumber[@type=\'start\']'))
-    stop = int(converters.get_single(root, 'safe:relativeOrbitNumber[@type=\'stop\']'))
+def _get_relative_orbit_number(root):
+    start = int(converters.get_single(root, 'safe:relative_orbit_number[@type=\'start\']'))
+    stop = int(converters.get_single(root, 'safe:relative_orbit_number[@type=\'stop\']'))
     if start != stop:
-        warnings.warn('relativeOrbitNumber range from {} to {}. Only returning {}'.format(start, stop, start))
+        warnings.warn(
+                'relative_orbit_number range from %s to %s. Only returning %s', start, stop, start)
     return start
 
 
@@ -51,15 +52,15 @@ def parse_metadata(metadatafile=None, metadatastr=None):
     root = converters.get_root(metadatafile, metadatastr)
     _get_single = functools.partial(converters.get_single, root)
     metadata = {
-            'footPrint': converters.get_single_polygon_yx(root, 'gml:coordinates'),
-            'relativeOrbitNumber': xml_get_relativeOrbitNumber(root),
-            'startTime': converters.get_single_date(root, 'safe:startTime'),
-            'stopTime': converters.get_single_date(root, 'safe:stopTime'),
-            'resource_name': converters.get_instance(root, 'safe:resource', 'name', index=0),
-            'productType': _get_single('s1sarl1:productType'),
+            'title': converters.get_instance(root, 'safe:resource', 'name', index=0),
+            'footprint': converters.get_single_polygon_yx(root, 'gml:coordinates'),
+            'relative_orbit_number': _get_relative_orbit_number(root),
+            'sensing_start': converters.get_single_date(root, 'safe:startTime'),
+            'sensing_end': converters.get_single_date(root, 'safe:stopTime'),
+            'product_type': _get_single('s1sarl1:productType'),
             'polarizations': converters.get_all(root, 's1sarl1:transmitterReceiverPolarisation'),
             'pass': _get_single('s1:pass')}
-    metadata['platform'] = get_platform_name(metadata['resource_name'])
+    metadata['spacecraft'] = get_spacecraft_name(metadata['title'])
     return metadata
 
 

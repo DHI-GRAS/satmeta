@@ -80,7 +80,7 @@ def find_tile_name(fname):
                 'Unable to get tile name from \'{}\'.'.format(fname))
 
 
-def sensor_ID_from_product_name(product_name):
+def spacecraft_from_product_name(product_name):
     try:
         return re.search('^S2[AB]', product_name).group(0)
     except AttributeError:
@@ -88,7 +88,7 @@ def sensor_ID_from_product_name(product_name):
                 'Unable to get sensor ID from product name \'{}\'.'.format(product_name))
 
 
-def sensor_ID_from_spacecraft_name(spacecraft_name):
+def _spacecraft_from_spacecraft_name(spacecraft_name):
     try:
         return 'S' + re.search('^Sentinel-(2[AB])', spacecraft_name).group(1)
     except AttributeError:
@@ -122,7 +122,7 @@ def parse_granule_metadata_xml(root):
                 'Mean_Viewing_Incidence_Angle_List/Mean_Viewing_Incidence_Angle/AZIMUTH_ANGLE',
                 to_type=float),
             'projection': _get_single('HORIZONTAL_CS_CODE'),
-            'cloudCoverPercent': _get_single('CLOUDY_PIXEL_PERCENTAGE', to_type=float),
+            'cloud_cover_percentage': _get_single('CLOUDY_PIXEL_PERCENTAGE', to_type=float),
             'image_size': _get_sizes(root),
             'image_geoposition': _get_geopositions(root)}
     metadata['tile_name'] = _tile_name_from_tile_ID(metadata['tile_ID'])
@@ -138,10 +138,9 @@ def parse_metadata_xml(root):
     """Parse S2 PRODUCT meta data XML"""
     _get_single = functools.partial(converters.get_single, root)
     metadata = {
-            'productName': _get_single('PRODUCT_URI'),
-            'startTime': converters.get_single_date(root, 'PRODUCT_START_TIME'),
+            'title': _get_single('PRODUCT_URI'),
+            'sensing_time': converters.get_single_date(root, 'PRODUCT_START_TIME'),
             'processing_level': _get_single('PROCESSING_LEVEL'),
-            'spacecraft': _get_single('SPACECRAFT_NAME'),
             'orbit_direction': _get_single('SENSING_ORBIT_DIRECTION'),
             'quantification_value': _get_single(
                 'QUANTIFICATION_VALUE', to_type=int),
@@ -149,7 +148,7 @@ def parse_metadata_xml(root):
                 'Reflectance_Conversion/U', to_type=float),
             'irradiance_values': converters.get_all(root,
                 'Reflectance_Conversion/Solar_Irradiance_List/SOLAR_IRRADIANCE', to_type=float)}
-    metadata['sensor_ID'] = sensor_ID_from_spacecraft_name(metadata['spacecraft'])
+    metadata['spacecraft'] = _spacecraft_from_spacecraft_name(_get_single('SPACECRAFT_NAME'))
     return metadata
 
 
