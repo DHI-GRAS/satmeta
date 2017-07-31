@@ -3,7 +3,7 @@ python:
   - "2.7"
   - "3.6"
 before_install:
-  - pip install -U pi
+  - pip install -U pip
 install:
   - pip install -r requirements.txt
   - pip install -e .[test]
