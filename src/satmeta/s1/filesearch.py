@@ -40,7 +40,10 @@ def find_input_files(indir, formats=['zip', 'SAFE'], ignore_empty=False):
             infiles_found = list(filter(os.path.getsize, infiles_found))
         if infiles_found:
             filesets.append(infiles_found)
-    return filesets[0]
+    try:
+        return filesets[0]
+    except IndexError:
+        return []
 
 
 def filter_infiles_by_date(infiles, start_date=None, end_date=None):
@@ -131,7 +134,8 @@ def filter_input_files(infiles, start_date=None, end_date=None, rel_orbit_number
     num_cores = multiprocessing.cpu_count()
     njobs = min((num_cores, 4))
     infile_iter = tqdm(infiles, desc='input file filter', unit='input file')
-    mask = joblib.Parallel(n_jobs=njobs)(joblib.delayed(_filter_infile)(infile, **filterkw) for infile in infile_iter)
+    mask = joblib.Parallel(n_jobs=njobs)(
+            joblib.delayed(_filter_infile)(infile, **filterkw) for infile in infile_iter)
 
     infiles = np.array(infiles, dtype='object')[mask].tolist()
     logger.debug(
