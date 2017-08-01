@@ -69,7 +69,7 @@ def filter_rel_orbit_numbers(infiles, rel_orbit_numbers):
             o = meta.get_rel_orbit_number(infile)
         except meta.MetaDataError as me:
             logger.info(
-                    'Unable to get orbit number from file \'%s\'. %s. Skipping.'
+                    'Unable to get orbit number from file \'%s\'. %s. Skipping.',
                     infile, me)
             continue
         logger.debug('Input file \'%s\' has orbit number %s.', infile, o)
