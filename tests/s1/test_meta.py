@@ -27,3 +27,8 @@ def test_meta_keys():
     meta = s1meta.parse_metadata(metadatafile=test_data['manifest'])
     for key in ['pass']:
         assert key in meta
+
+
+def test_spacecraft():
+    meta = s1meta.parse_metadata(metadatafile=test_data['manifest'])
+    assert 'spacecraft' in meta

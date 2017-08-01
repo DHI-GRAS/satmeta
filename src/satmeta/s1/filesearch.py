@@ -10,7 +10,7 @@ import joblib
 
 from . import meta
 
-logger = logging.getLogger('sentinel_meta.s1.filesearch')
+logger = logging.getLogger(__name__)
 
 
 def find_input_files(indir, formats=['zip', 'SAFE'], ignore_empty=False):
@@ -37,7 +37,7 @@ def find_input_files(indir, formats=['zip', 'SAFE'], ignore_empty=False):
         infiles_found = glob.glob(filepattern)
         logger.info('Found {} files of format {}'.format(len(infiles_found), fmtkey))
         if ignore_empty:
-            infiles_found = filter(os.path.getsize, infiles_found)
+            infiles_found = list(filter(os.path.getsize, infiles_found))
         if infiles_found:
             filesets.append(infiles_found)
     return filesets[0]
@@ -68,9 +68,11 @@ def filter_rel_orbit_numbers(infiles, rel_orbit_numbers):
         try:
             o = meta.get_rel_orbit_number(infile)
         except meta.MetaDataError as me:
-            logger.info('Unable to get orbit number from file \'{}\'. {}. Skipping.'.format(infile, me))
+            logger.info(
+                    'Unable to get orbit number from file \'%s\'. %s. Skipping.'
+                    infile, me)
             continue
-        logger.debug('Input file \'{}\' has orbit number {}.'.format(infile, o))
+        logger.debug('Input file \'%s\' has orbit number %s.', infile, o)
         if o in rel_orbit_numbers:
             infiles_filtered.append(infile)
     return infiles_filtered
@@ -132,5 +134,6 @@ def filter_input_files(infiles, start_date=None, end_date=None, rel_orbit_number
     mask = joblib.Parallel(n_jobs=njobs)(joblib.delayed(_filter_infile)(infile, **filterkw) for infile in infile_iter)
 
     infiles = np.array(infiles, dtype='object')[mask].tolist()
-    logger.debug('Number of files matching filtering criteria: {}'.format(len(infiles)))
+    logger.debug(
+            'Number of files matching filtering criteria: %d', len(infiles))
     return infiles

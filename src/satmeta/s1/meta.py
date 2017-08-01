@@ -40,11 +40,11 @@ def get_product_date(fname):
 
 
 def _get_relative_orbit_number(root):
-    start = int(converters.get_single(root, 'safe:relative_orbit_number[@type=\'start\']'))
-    stop = int(converters.get_single(root, 'safe:relative_orbit_number[@type=\'stop\']'))
+    start = int(converters.get_single(root, 'safe:relativeOrbitNumber[@type=\'start\']'))
+    stop = int(converters.get_single(root, 'safe:relativeOrbitNumber[@type=\'stop\']'))
     if start != stop:
         warnings.warn(
-                'relative_orbit_number range from %s to %s. Only returning %s', start, stop, start)
+                'relativeOrbitNumber range from %s to %s. Only returning %s', start, stop, start)
     return start
 
 

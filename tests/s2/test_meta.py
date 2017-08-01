@@ -37,9 +37,9 @@ def test_find_parse_metadata():
             assert test_tile_ID[key] in meta['granules']
 
 
-def test_sensor_ID():
+def test_spacecraft():
     for key in ['new', 'old']:
         for fmt in ['SAFE', 'zip']:
             infile = test_data[key][fmt]
             meta = s2meta.find_parse_metadata(infile, check_granules=True)
-            assert meta['sensor_ID'] == 'S2A'
+            assert meta['spacecraft'] == 'S2A'
