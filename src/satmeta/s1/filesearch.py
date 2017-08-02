@@ -100,11 +100,11 @@ def check_same_infile_type(infiles):
 def metadata_matches(metadata, rel_orbit_numbers=None, aoi=None):
     matches = True
     if aoi is not None:
-        matches &= metadata['footPrint'].overlaps(aoi)
+        matches &= metadata['footprint'].overlaps(aoi)
         if not matches:
             return matches
     if rel_orbit_numbers:
-        matches &= metadata['relativeOrbitNumber'] in rel_orbit_numbers
+        matches &= metadata['relative_orbit_number'] in rel_orbit_numbers
     return matches
 
 
