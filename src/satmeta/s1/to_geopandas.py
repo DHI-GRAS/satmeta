@@ -78,7 +78,7 @@ def group_infiles(gdf):
     """
     gdf['date'] = pd.DatetimeIndex(gdf.sensing_start).date
     for date, gdf_date in gdf.groupby('date'):
-        for rob, gdf_rob in gdf_date.groupby('relativeOrbitNumber'):
+        for rob, gdf_rob in gdf_date.groupby('relative_orbit_number'):
             for passdir, gdf_passdir in gdf_rob.groupby('pass'):
                 for platform, gdf_platform in gdf_passdir.groupby('platform'):
                     fp = get_footprint_union(gdf_platform)
