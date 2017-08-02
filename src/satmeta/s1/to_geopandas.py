@@ -69,7 +69,7 @@ def group_infiles(gdf):
         date (assuming that all files from one date are from the same overpass)
           relative orbit
             pass direction
-              platform (S1A, S1B)
+              spacecraft (S1A, S1B)
 
     Parameters
     ----------
@@ -80,9 +80,9 @@ def group_infiles(gdf):
     for date, gdf_date in gdf.groupby('date'):
         for rob, gdf_rob in gdf_date.groupby('relative_orbit_number'):
             for passdir, gdf_passdir in gdf_rob.groupby('pass'):
-                for platform, gdf_platform in gdf_passdir.groupby('platform'):
-                    fp = get_footprint_union(gdf_platform)
+                for spacecraft, gdf_spacecraft in gdf_passdir.groupby('spacecraft'):
+                    fp = get_footprint_union(gdf_spacecraft)
                     meta = dict(
                         date=date, rob=rob, passdir=passdir,
-                        platform=platform, footprint_union=fp)
-                    yield meta, gdf_platform['filepath'].values.tolist()
+                        spacecraft=spacecraft, footprint_union=fp)
+                    yield meta, gdf_spacecraft['filepath'].values.tolist()
