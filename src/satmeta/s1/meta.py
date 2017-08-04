@@ -59,7 +59,7 @@ def parse_metadata(metadatafile=None, metadatastr=None):
             'sensing_end': converters.get_single_date(root, 'safe:stopTime'),
             'product_type': _get_single('s1sarl1:productType'),
             'polarizations': converters.get_all(root, 's1sarl1:transmitterReceiverPolarisation'),
-            'pass': _get_single('s1:pass')}
+            'passdir': _get_single('s1:pass')}
     metadata['spacecraft'] = get_spacecraft_name(metadata['title'])
     return metadata
 
