@@ -34,6 +34,8 @@ def _get_meta_as_geoseries_failsafe(infile):
         return get_meta_as_geoseries(infile)
     except MetaDataError as me:
         return me
+    except PermissionError as pe:
+        return pe
 
 
 def _merge_geoseries(gss):
