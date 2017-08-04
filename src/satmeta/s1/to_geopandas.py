@@ -128,11 +128,42 @@ def group_infiles(gdf):
     """
     gdf['date'] = pd.DatetimeIndex(gdf.sensing_start).date
     for date, gdf_date in gdf.groupby('date'):
-        for rob, gdf_rob in gdf_date.groupby('relative_orbit_number'):
-            for passdir, gdf_passdir in gdf_rob.groupby('pass'):
+        for relative_orbit_number, gdf_rob in gdf_date.groupby('relative_orbit_number'):
+            for passdir, gdf_passdir in gdf_rob.groupby('passdir'):
                 for spacecraft, gdf_spacecraft in gdf_passdir.groupby('spacecraft'):
                     fp = _get_footprint_union(gdf_spacecraft)
                     meta = dict(
-                        date=date, rob=rob, passdir=passdir,
+                        date=date, relative_orbit_number=relative_orbit_number, passdir=passdir,
                         spacecraft=spacecraft, footprint_union=fp)
                     yield meta, gdf_spacecraft['filepath'].values.tolist()
+
+
+def filter_gdf(
+        gdf, rel_orbit_numbers=None, footprint_overlaps=None,
+        start_date=None, end_date=None):
+    """Filter S1 metadata GeoDataFrame
+
+    Parameters
+    ----------
+    gdf : GeoDataFrame
+        S1 metadata
+    rel_orbit_numbers : list of int
+        relative orbit numbers
+    footprint_overlaps : shapely.geometry.Polygon
+        AOI polygon
+    start_date, end_date : datetime.datetime or datestr
+        date interval
+    """
+    if start_date is not None:
+        mask = gdf['sensing_start'] >= start_date
+        gdf = gdf[mask]
+    if end_date is not None:
+        mask = gdf['sensing_end'] >= end_date
+        gdf = gdf[mask]
+    if rel_orbit_numbers is not None:
+        mask = gdf.apply((lambda d: d['relative_orbit_number'] in rel_orbit_numbers), axis=1)
+        gdf = gdf[mask]
+    if footprint_overlaps is not None:
+        mask = gdf.overlaps(footprint_overlaps)
+        gdf = gdf[mask]
+    return gdf
