@@ -4,6 +4,17 @@ import satmeta.s1.metafile as s1metafile
 from .data import test_data
 
 
+_expected_keys = [
+        'title',
+        'footprint',
+        'relative_orbit_number',
+        'sensing_start',
+        'sensing_end',
+        'product_type',
+        'polarizations',
+        'passdir']
+
+
 def test_find_manifest_in_SAFE():
     s1metafile.find_manifest_in_SAFE(test_data['SAFE'])
 
@@ -25,7 +36,7 @@ def test_find_parse_metadata_zip():
 
 def test_meta_keys():
     meta = s1meta.parse_metadata(metadatafile=test_data['manifest'])
-    for key in ['pass']:
+    for key in _expected_keys:
         assert key in meta
 
 
