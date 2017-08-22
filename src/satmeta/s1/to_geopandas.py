@@ -1,4 +1,5 @@
 import logging
+import warnings
 
 import geopandas as gpd
 import pandas as pd
@@ -107,7 +108,7 @@ def _get_footprint_union(gdf):
     return shapely.ops.unary_union(gdf['footprint'].values).convex_hull
 
 
-def group_infiles(gdf):
+def group_gdf(gdf):
     """Group input files GeoDataFrame to get stitchable file sets
 
     Groups by:
