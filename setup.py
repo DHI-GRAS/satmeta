@@ -10,4 +10,6 @@ setup(
     package_dir={'': 'src'},
     install_requires=[
         'python-dateutil',
-        'lxml', 'shapely'])
+        'lxml',
+        'shapely',
+        'affine'])
