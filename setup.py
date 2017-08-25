@@ -12,4 +12,7 @@ setup(
         'python-dateutil',
         'lxml',
         'shapely',
-        'affine'])
+        'affine'],
+    extras_require={
+        'test': [
+            'pytest']})

@@ -70,4 +70,8 @@ def find_parse_metadata(infile):
         mstr = metafile.read_manifest_SAFE(infile)
     elif infile.endswith('.zip'):
         mstr = metafile.read_manifest_ZIP(infile)
+    else:
+        raise ValueError(
+                'Input file/folder must end in .zip or .SAFE. '
+                'Got \'{}\'.'.format(infile))
     return parse_metadata(metadatastr=mstr)

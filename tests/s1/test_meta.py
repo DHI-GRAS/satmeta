@@ -1,3 +1,5 @@
+import pytest
+
 import satmeta.s1.meta as s1meta
 import satmeta.s1.metafile as s1metafile
 
@@ -43,3 +45,8 @@ def test_meta_keys():
 def test_spacecraft():
     meta = s1meta.parse_metadata(metadatafile=test_data['manifest'])
     assert 'spacecraft' in meta
+
+
+def test_find_parse_metadata_fail():
+    with pytest.raises(ValueError):
+        s1meta.find_parse_metadata('/some/random/thing')
