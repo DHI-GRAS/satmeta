@@ -43,7 +43,7 @@ def read_metafile_ZIP(zipfilepath):
             metafile = find_metafile_in_zip(zf.namelist())
             return zf.open(metafile).read()
     except zipfile.BadZipfile as e:
-        raise MetaDataError('Unable to read zip file \'{}\': {}'.format(zipfilepath, str(e)))
+        raise MetaDataError('Unable to read zip file \'{}\': {}'.format(zipfilepath, e))
 
 
 def find_read_metafile(input_path):
