@@ -115,10 +115,12 @@ def parse_granule_metadata_xml(root):
             'tile_ID': _get_single('TILE_ID'),
             'sun_zenith': _get_single('Mean_Sun_Angle/ZENITH_ANGLE', to_type=float),
             'sun_azimuth': _get_single('Mean_Sun_Angle/AZIMUTH_ANGLE', to_type=float),
-            'sensor_zenith': converters.get_all(root,
+            'sensor_zenith': converters.get_all(
+                root,
                 'Mean_Viewing_Incidence_Angle_List/Mean_Viewing_Incidence_Angle/ZENITH_ANGLE',
                 to_type=float),
-            'sensor_azimuth': converters.get_all(root,
+            'sensor_azimuth': converters.get_all(
+                root,
                 'Mean_Viewing_Incidence_Angle_List/Mean_Viewing_Incidence_Angle/AZIMUTH_ANGLE',
                 to_type=float),
             'projection': _get_single('HORIZONTAL_CS_CODE'),
@@ -146,7 +148,8 @@ def parse_metadata_xml(root):
                 'QUANTIFICATION_VALUE', to_type=int),
             'reflectance_conversion': _get_single(
                 'Reflectance_Conversion/U', to_type=float),
-            'irradiance_values': converters.get_all(root,
+            'irradiance_values': converters.get_all(
+                root,
                 'Reflectance_Conversion/Solar_Irradiance_List/SOLAR_IRRADIANCE', to_type=float)}
     metadata['spacecraft'] = _spacecraft_from_spacecraft_name(_get_single('SPACECRAFT_NAME'))
     return metadata
@@ -169,12 +172,7 @@ def find_parse_metadata(
     -------
     product meta data dictionary with 'granules' key
     """
-    if infile.endswith('.SAFE'):
-        mstr = metafile.read_metafile_SAFE(infile)
-    elif infile.endswith('.zip'):
-        mstr = metafile.read_metafile_ZIP(infile)
-    else:
-        raise ValueError('This function works only for .SAFE or .zip.')
+    mstr = metafile.find_read_metafile(infile)
     metadata = parse_metadata(metadatastr=mstr)
     gmeta = find_parse_granule_metadata(infile)
     if check_granules and not gmeta:
@@ -183,7 +181,8 @@ def find_parse_metadata(
 
     if flatten_single_granule:
         if len(gmeta) != 1:
-            raise ValueError('Cannot merge granule metadata because there are '
+            raise ValueError(
+                    'Cannot merge granule metadata because there are '
                     'several granules in product: {}'.format(set(gmeta)))
         metadata.update(gmeta)
     else:
@@ -191,17 +190,10 @@ def find_parse_metadata(
     return metadata
 
 
-def find_parse_granule_metadata(infile):
+def find_parse_granule_metadata(infile, tile_name=None):
     """Find and parse granule meta data in SAFE or zip"""
     granulesdict = {}
-    if infile.endswith('.SAFE'):
-        for mf in metafile.find_granule_metafiles_in_SAFE(infile):
-            gmeta = parse_granule_metadata(metadatafile=mf)
-            granulesdict[gmeta['tile_name']] = gmeta
-    elif infile.endswith('.zip'):
-        for mstr in metafile.read_granule_metafiles_ZIP(infile):
-            gmeta = parse_granule_metadata(metadatastr=mstr)
-            granulesdict[gmeta['tile_name']] = gmeta
-    else:
-        raise ValueError('This function works only for .SAFE or .zip.')
+    for mstr in metafile.find_read_granule_metafiles(infile, tile_name=tile_name):
+        gmeta = parse_granule_metadata(metadatastr=mstr)
+        granulesdict[gmeta['tile_name']] = gmeta
     return granulesdict
