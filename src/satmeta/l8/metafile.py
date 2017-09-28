@@ -38,7 +38,7 @@ def read_metafile_TAR(infile):
 
 
 def extract_metafile_TAR(infile, outfile):
-    mstr = read_metafile_TAR()
+    mstr = read_metafile_TAR(infile)
     with open(outfile, 'wb') as fout:
         fout.write(mstr)
 
