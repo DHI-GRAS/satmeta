@@ -207,7 +207,7 @@ def find_read_granule_metafiles(input_path, tile_name=None, **findkwargs):
 def extract_metafile(input_path, outfile):
     """Extract and save metadata file"""
     mstr = find_read_metafile(input_path)
-    with open(outfile, 'wb') as fout:
+    with open(outfile, 'w') as fout:
         fout.write(mstr)
 
 
@@ -219,7 +219,7 @@ def extract_single_granule_metafile(input_path, outfile, tile_name):
         raise ValueError(
                 'No granule metadata file found in \'{}\' '
                 'for tile name \'{}\'.'.format(input_path, tile_name))
-    with open(outfile, 'wb') as fout:
+    with open(outfile, 'w') as fout:
         fout.write(mstr)
 
 
