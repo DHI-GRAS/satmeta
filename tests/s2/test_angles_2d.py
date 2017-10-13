@@ -15,7 +15,7 @@ skip_rasterio = pytest.mark.skipif(
 
 
 try:
-    import imresize
+    from scipy.misc import imresize
     no_imresize = False
 except ImportError:
     no_imresize = True
@@ -73,3 +73,18 @@ def test_parse_resample_angles_imresize():
     a = adict['Sun']['Zenith']
     assert a.shape == (1830, 1830)
     assert a.any()
+
+
+@skip_rasterio
+def test_parse_resample_angles_rasterio_dst_shape():
+    dst_shape = (200, 300)
+    dst_transform = None
+    infile = test_data['new']['granule_xml']
+    adict = s2angles2d.parse_resample_angles(
+            infile,
+            resample_method='rasterio',
+            angles=['Sun'], angle_dirs=['Zenith'],
+            dst_transform=dst_transform,
+            dst_shape=dst_shape)
+    a = adict['Sun']['Zenith']
+    assert a.shape == dst_shape

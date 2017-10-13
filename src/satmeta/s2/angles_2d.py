@@ -126,9 +126,9 @@ def get_angles_with_gref(root, group, meta=None):
     return angles_raw, src_transform, src_crs
 
 
-def get_resample_angles_rasterio(root, group, dst_res=None,
-        dst_transform=None, dst_crs=None, dst_shape=None,
-        meta=None):
+def get_resample_angles_rasterio(
+        root, group, dst_res=None, dst_transform=None,
+        dst_crs=None, dst_shape=None, meta=None):
     """Parse angles and resample to dst_res
 
     Parameters
@@ -137,9 +137,17 @@ def get_resample_angles_rasterio(root, group, dst_res=None,
         root of granule metadata XML doc
     group : str
         path to angles tag
-    dst_res : int
+    dst_res : int, optional
         target resolution
-
+        NB: overrides dst_shape, dst_transform, and dst_crs
+    dst_transform : Affine, optional
+        transform to resample to
+    dst_crs : dict or CRS, optional
+        destination CRS
+    dst_shape : tuple, optional
+        destinatinon shape
+    meta : dict, optional
+        granule metadata
     """
     import rasterio.crs
     import rasterio.warp
@@ -163,7 +171,7 @@ def get_resample_angles_rasterio(root, group, dst_res=None,
             raise ValueError(
                     'You must either specify `dst_crs` and '
                     '`dst_transform` or choose a predefined resolution ({}).'
-                    ''.format(s2meta._all_res))
+                    .format(s2meta._all_res))
 
     if dst_crs is None:
         dst_crs = src_crs
@@ -178,14 +186,10 @@ def get_resample_angles_rasterio(root, group, dst_res=None,
                     *src_bounds))
         dst_shape = (dst_width, dst_height)
 
-    if dst_transform is None and dst_shape is None:
-        # default: unchanged
+    if dst_transform is None:
         dst_transform = src_transform
+    if dst_shape is None:
         dst_shape = angles_raw.shape
-    elif dst_transform is None or dst_shape is None:
-        raise ValueError(
-                '`dst_transform` and `dst_shape` '
-                'must both be specified.')
 
     angles_filled = np.ma.masked_invalid(angles_raw).filled(999)
 
@@ -199,8 +203,8 @@ def get_resample_angles_rasterio(root, group, dst_res=None,
             resampling=0)
 
 
-def get_resample_angles_imresize(root, group,
-        dst_res=None, dst_shape=None, meta=None):
+def get_resample_angles_imresize(
+        root, group, dst_res=None, dst_shape=None, meta=None):
     """Parse angles and resample to dst_res
 
     Parameters
