@@ -1,6 +1,7 @@
 # satmeta
 
 [![Build Status](https://travis-ci.org/DHI-GRAS/satmeta.svg?branch=master)](https://travis-ci.org/DHI-GRAS/satmeta)
+[![codecov](https://codecov.io/gh/DHI-GRAS/satmeta/branch/master/graph/badge.svg)](https://codecov.io/gh/DHI-GRAS/satmeta)
 
 Extract meta data from satellite data products
 
