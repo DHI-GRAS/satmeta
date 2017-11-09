@@ -11,7 +11,7 @@ INFILE_TAR = TESTDATA['tar.gz']
 
 def test_read_metafile_TAR():
     mstr = l8metafile.read_metafile_TAR(INFILE_TAR)
-    assert b'LANDSAT' in mstr
+    assert 'LANDSAT' in mstr
 
 
 def test_extract_metafile():

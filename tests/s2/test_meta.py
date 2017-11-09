@@ -1,3 +1,4 @@
+from satmeta import COMMON_KEYS
 import satmeta.s2.meta as s2meta
 
 from .data import test_data
@@ -43,3 +44,12 @@ def test_spacecraft():
             infile = test_data[key][fmt]
             meta = s2meta.find_parse_metadata(infile, check_granules=True)
             assert meta['spacecraft'] == 'S2A'
+
+
+def test_common():
+    for key in ['new', 'old']:
+        for fmt in ['SAFE', 'zip']:
+            infile = test_data[key][fmt]
+            metadata = s2meta.find_parse_metadata(infile, check_granules=True)
+            missing = (set(COMMON_KEYS) - set(metadata))
+            assert not missing

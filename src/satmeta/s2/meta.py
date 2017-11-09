@@ -144,8 +144,7 @@ def parse_metadata_xml(root):
             'sensing_time': converters.get_single_date(root, 'PRODUCT_START_TIME'),
             'processing_level': _get_single('PROCESSING_LEVEL'),
             'orbit_direction': _get_single('SENSING_ORBIT_DIRECTION'),
-            'quantification_value': _get_single(
-                'QUANTIFICATION_VALUE', to_type=int),
+            'quantification_value': _get_single('QUANTIFICATION_VALUE', to_type=int),
             'reflectance_conversion': _get_single(
                 'Reflectance_Conversion/U', to_type=float),
             'irradiance_values': converters.get_all(

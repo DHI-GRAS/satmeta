@@ -21,8 +21,9 @@ def dates_from_fname(fname, zero_time=False):
         fmt = '%Y%m%dt%H%M%S'
     dd = re.findall(regex, fname.lower())
     if not dd:
-        raise ValueError('Could not find dates of format \'{}\' '
-                'in file name \'{}\'.'.format(fmt, fname))
+        raise ValueError(
+            'Could not find dates of format \'{}\' '
+            'in file name \'{}\'.'.format(fmt, fname))
     return [datetime.datetime.strptime(d, fmt) for d in dd]
 
 
@@ -61,6 +62,7 @@ def parse_metadata(metadatafile=None, metadatastr=None):
             'polarizations': converters.get_all(root, 's1sarl1:transmitterReceiverPolarisation'),
             'passdir': _get_single('s1:pass')}
     metadata['spacecraft'] = get_spacecraft_name(metadata['title'])
+    metadata['sensing_time'] = metadata['sensing_start']
     return metadata
 
 

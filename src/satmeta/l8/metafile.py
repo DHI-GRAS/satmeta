@@ -34,12 +34,13 @@ def read_metafile_TAR(infile):
     with tarfile.open(infile) as tar:
         names = tar.getnames()
         mtl_member = _find_metafile_in_names(names)
-        return tar.extractfile(mtl_member).read()
+        mstr = tar.extractfile(mtl_member).read()
+        return mstr.decode('utf-8')
 
 
 def extract_metafile_TAR(infile, outfile):
     mstr = read_metafile_TAR(infile)
-    with open(outfile, 'wb') as fout:
+    with open(outfile, 'w') as fout:
         fout.write(mstr)
 
 
@@ -48,3 +49,21 @@ def extract_metafile(input_path, outfile):
         extract_metafile_folder(input_path. outfile)
     else:
         extract_metafile_TAR(input_path, outfile)
+
+
+def read_metafile(path):
+    if os.path.isfile(path):
+        ext = os.path.splitext(path)[1].lower()
+        if ext in ['.tar', '.gz', '.tgz']:
+            return read_metafile_TAR(path)
+        else:
+            # assume plain text
+            mstr = open(path).read()
+            if 'LANDSAT' in mstr:
+                return mstr
+            else:
+                raise ValueError(
+                    'File \'{}\' is not a plain-text MTD file'.format(path))
+    elif os.path.isdir(path):
+        return read_metafile_folder(path)
+    raise ValueError('Input path \'{}\' is neither a valid (TXT/TAR) file or folder.')
