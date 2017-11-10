@@ -12,7 +12,6 @@ def test_parse_metadata():
     with open(INFILE_TXT) as fin:
         metadata = l8parser.parse_metadata(lines=fin)
     assert isinstance(metadata, dict)
-    assert 'row' in metadata
     assert isinstance(metadata['row'], int)
 
 
@@ -28,3 +27,13 @@ def test_footprint():
         metadata = l8parser.parse_metadata(lines=fin)
     assert isinstance(metadata['footprint'], shapely.geometry.Polygon)
     assert isinstance(metadata['footprint_projected'], shapely.geometry.Polygon)
+
+
+def test_rescaling():
+    with open(INFILE_TXT) as fin:
+        metadata = l8parser.parse_metadata(lines=fin)
+    rsd = metadata['rescaling']
+    assert isinstance(rsd, dict)
+    assert set(rsd) == {'RADIANCE', 'REFLECTANCE'}
+    assert len(rsd['RADIANCE']['ADD']) == 11
+    assert isinstance(rsd['RADIANCE']['MULT'][0], float)

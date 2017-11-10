@@ -1,9 +1,15 @@
 import re
 from itertools import product
+from collections import defaultdict
 
 import shapely.geometry
 import dateutil.parser
 
+NBANDS = {
+    'REFLECTANCE': 9,
+    'RADIANCE': 11}
+
+FLOAT_REGEX = r'([+-]?\d+\.?\d*(?:[Ee][+-]?\d+)?)'
 
 PREFIX_REMOVE = [
     'LANDSAT_', 'WRS_']
@@ -29,7 +35,10 @@ SPECIAL_PATTERNS = {
     'SCENE_CENTER_TIME': r'SCENE_CENTER_TIME\s=\s"([\d:\.]*Z)"'}
 
 KEYGEN_PATTERNS = [
-    (float, re.compile(r'CORNER_([A-Z_]+)_PRODUCT\s=\s(-?\d+\.?\d*)'))]
+    (float, re.compile(r'CORNER_([A-Z_]+)_PRODUCT\s=\s' + FLOAT_REGEX))]
+
+RESCALING_PATTERN = (
+    re.compile(r'(RADIANCE|REFLECTANCE)_(MULT|ADD)_BAND_(\d{1,2})\s=\s' + FLOAT_REGEX))
 
 
 def _generate_string_pattern(key):
@@ -73,24 +82,62 @@ def _gather_converters():
     return converters
 
 
+def _parse_patterns(line, patterns, converters):
+    for key, pattern in patterns.items():
+        match = re.search(pattern, line)
+        if match is not None:
+            value = match.group(1)
+            if key in converters:
+                value = converters[key](value)
+            return key, value
+    return None, None
+
+
+def _parse_keygen_patterns(line):
+    for converter, pattern in KEYGEN_PATTERNS:
+        match = re.search(pattern, line)
+        if match is not None:
+            key, value = match.groups()
+            return key, converter(value)
+    return None, None
+
+
+def _parse_rescaling(line, rescaling_dict):
+    match = RESCALING_PATTERN.search(line)
+    if match is not None:
+        group, operation, band, value = match.groups()
+        rescaling_dict[group][operation].append((int(band), float(value)))
+
+
 def _plain_parse_metadata(lines):
     metadata = {}
+    metadata['rescaling'] = {
+        'RADIANCE': defaultdict(list),
+        'REFLECTANCE': defaultdict(list)}
     patterns = _gather_patterns()
     converters = _gather_converters()
     for line in lines:
-        for key, pattern in patterns.items():
-            match = re.search(pattern, line)
-            if match is not None:
-                value = match.group(1)
-                if key in converters:
-                    value = converters[key](value)
-                metadata[key] = value
-        for converter, pattern in KEYGEN_PATTERNS:
-            match = re.search(pattern, line)
-            if match is not None:
-                key, value = match.groups()
-                metadata[key] = converter(value)
+        key, value = _parse_patterns(line, patterns, converters)
+        if key is not None:
+            metadata[key] = value
+            continue
+        key, value = _parse_keygen_patterns(line)
+        if key is not None:
+            metadata[key] = value
+            continue
+        _parse_rescaling(line, metadata['rescaling'])
     return metadata
+
+
+def _postprocess_rescaling(rescaling_dict):
+    for group in rescaling_dict:
+        nbands = NBANDS[group]
+        for operation in rescaling_dict[group]:
+            vv = rescaling_dict[group][operation]
+            print(vv)
+            if not len(vv) == nbands:
+                raise ValueError('Expecting values for all {} bands'.format(nbands))
+            rescaling_dict[group][operation] = [v[1] for v in sorted(vv)]
 
 
 def _postprocess_sensing_time(metadata):
@@ -140,6 +187,7 @@ def parse_metadata(lines):
     metadata['footprint'] = _get_footprint(metadata, xext='_LON', yext='_LAT')
     metadata['footprint_projected'] = _get_footprint(metadata,
                                                      xext='_PROJECTION_X', yext='_PROJECTION_Y')
+    _postprocess_rescaling(metadata['rescaling'])
     # rename keys to lowercase
     metadata = {_remove_prefix(k).lower(): v for k, v in metadata.items()}
     _postprocess_sensing_time(metadata)
