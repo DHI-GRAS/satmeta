@@ -3,9 +3,8 @@ from collections import defaultdict
 
 import numpy as np
 
-from . import meta as s2meta
-from . import utils as s2utils
-
+from satmeta.s2 import meta as s2meta
+from satmeta.s2 import utils as s2utils
 from satmeta import utils
 from satmeta import converters
 
@@ -18,7 +17,7 @@ _all_angles = ['Viewing_Incidence', 'Sun']
 _all_dirs = ['Zenith', 'Azimuth']
 
 
-def get_res(root, group):
+def _get_res(root, group):
     """Get resolution from XML root and data group"""
     res = {}
     for s in ['COL_STEP', 'ROW_STEP']:
@@ -28,7 +27,7 @@ def get_res(root, group):
     return res
 
 
-def get_values(root, group):
+def _get_values(root, group):
     """Get VALUES from group in XML root
 
     Parameters
@@ -37,7 +36,7 @@ def get_values(root, group):
         root of XML document
     group : str
         tag name of data
-        see `generate_group_name`
+        see `_generate_group_name`
     """
     tagname = posixpath.join(group, 'Values_List/VALUES')
 
@@ -49,7 +48,7 @@ def get_values(root, group):
     return values2d
 
 
-def get_values_merged_detectors(root, group):
+def _get_values_merged_detectors(root, group):
     """Get VALUES from Viewing_Incidence grids and merge them
 
     Parameters
@@ -58,7 +57,7 @@ def get_values_merged_detectors(root, group):
         root of XML document
     group : str
         tag name of data
-        see `generate_group_name`
+        see `_generate_group_name`
     """
     pargroup, child = posixpath.split(group)
     ee = root.findall('.//' + pargroup)
@@ -69,7 +68,7 @@ def get_values_merged_detectors(root, group):
     aa = []
     for e in ee:
         group_detector = pargroup_detector_fmt.format(**e.attrib)
-        a = get_values(root, group_detector)
+        a = _get_values(root, group_detector)
         aa.append(a)
 
     a_merged = np.empty_like(aa[0])
@@ -81,7 +80,7 @@ def get_values_merged_detectors(root, group):
     return a_merged
 
 
-def get_angles_any_type(root, group):
+def _get_angles_any_type(root, group):
     """Common interface for Viewing_Incidence and Sun angles
 
     Parameters
@@ -90,15 +89,15 @@ def get_angles_any_type(root, group):
         root of XML document
     group : str
         tag name of data
-        see `generate_group_name`
+        see `_generate_group_name`
     """
     if 'Viewing_Incidence' in group:
-        return get_values_merged_detectors(root, group)
+        return _get_values_merged_detectors(root, group)
     else:
-        return get_values(root, group)
+        return _get_values(root, group)
 
 
-def get_angles_with_gref(root, group, meta=None):
+def _get_angles_with_gref(root, group, meta=None):
     """Get the angles data
 
     Parameters
@@ -120,13 +119,13 @@ def get_angles_with_gref(root, group, meta=None):
     pos = meta['image_geoposition'][10]
     # assume that the CRS of the angles is the same as image CRS
     src_crs = {'init': meta['projection']}
-    res = get_res(root, group)
+    res = _get_res(root, group)
     src_transform = s2utils.res_pos_to_affine(res, pos)
-    angles_raw = get_angles_any_type(root, group)
+    angles_raw = _get_angles_any_type(root, group)
     return angles_raw, src_transform, src_crs
 
 
-def get_resample_angles_rasterio(
+def _get_resample_angles_rasterio(
         root, group, dst_res=None, dst_transform=None,
         dst_crs=None, dst_shape=None, meta=None, resampling=None):
     """Parse angles and resample to dst_res
@@ -158,7 +157,7 @@ def get_resample_angles_rasterio(
 
     if meta is None:
         meta = s2meta.parse_granule_metadata_xml(root)
-    angles_raw, src_transform, src_crs = get_angles_with_gref(
+    angles_raw, src_transform, src_crs = _get_angles_with_gref(
             root, group, meta=meta)
 
     if resampling is None:
@@ -170,6 +169,10 @@ def get_resample_angles_rasterio(
         dst_crs = rasterio.crs.CRS(dst_crs)
 
     if dst_res is not None:
+        if any([v is not None for v in [dst_transform, dst_shape, dst_crs]]):
+            raise ValueError(
+                'You provided `dst_res`, which is meant to '
+                'override `dst_transform`, `dst_crs`, and `dst_shape`.')
         try:
             dst_transform = meta['image_transform'][dst_res]
             dst_shape = meta['image_shape'][dst_res]
@@ -210,7 +213,7 @@ def get_resample_angles_rasterio(
             resampling=resampling)
 
 
-def get_resample_angles_imresize(
+def _get_resample_angles_imresize(
         root, group, dst_res=None, dst_shape=None, meta=None):
     """Parse angles and resample to dst_res
 
@@ -227,7 +230,7 @@ def get_resample_angles_imresize(
 
     if meta is None:
         meta = s2meta.parse_granule_metadata_xml(root)
-    angles_raw = get_angles_any_type(root, group)
+    angles_raw = _get_angles_any_type(root, group)
 
     if dst_res is not None:
         dst_shape = meta['image_shape'][dst_res]
@@ -239,7 +242,7 @@ def get_resample_angles_imresize(
     return imresize(angles_raw, dst_shape, interp='bilinear', mode='F')
 
 
-def generate_group_name(angle, angle_dir, bandId):
+def _generate_group_name(angle, angle_dir, bandId):
     tag = _angles_tags[angle].format(bandId=bandId)
     return posixpath.join(tag, angle_dir)
 
@@ -277,8 +280,8 @@ def parse_angles(
     angles_data = defaultdict(dict)
     for angle in angles:
         for angle_dir in angle_dirs:
-            group = generate_group_name(angle, angle_dir, bandId=bandId)
-            angles_data[angle][angle_dir] = get_angles_any_type(root, group)
+            group = _generate_group_name(angle, angle_dir, bandId=bandId)
+            angles_data[angle][angle_dir] = _get_angles_any_type(root, group)
     return angles_data
 
 
@@ -321,9 +324,9 @@ def parse_resample_angles(
         angles dictionary
     """
     if resample_method == 'imresize':
-        _resample_func = get_resample_angles_imresize
+        _resample_func = _get_resample_angles_imresize
     elif resample_method == 'rasterio':
-        _resample_func = get_resample_angles_rasterio
+        _resample_func = _get_resample_angles_rasterio
     else:
         raise ValueError('resample_method must be `imresize` or `rasterio`.')
 
@@ -333,7 +336,7 @@ def parse_resample_angles(
     angles_data = defaultdict(dict)
     for angle in angles:
         for angle_dir in angle_dirs:
-            group = generate_group_name(angle, angle_dir, bandId=bandId)
+            group = _generate_group_name(angle, angle_dir, bandId=bandId)
             angles_data[angle][angle_dir] = _resample_func(
                     root, group, meta=meta, dst_res=dst_res, **resample_kwargs)
     return angles_data

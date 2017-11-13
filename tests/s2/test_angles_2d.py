@@ -41,9 +41,9 @@ def test_get_angles_with_gref():
     import affine
     infile = test_data['new']['granule_xml']
     root = converters.get_root(infile)
-    group = s2angles2d.generate_group_name(
+    group = s2angles2d._generate_group_name(
             angle='Sun', angle_dir='Zenith', bandId=0)
-    angles, transform, crs = s2angles2d.get_angles_with_gref(
+    angles, transform, crs = s2angles2d._get_angles_with_gref(
             root, group, meta=None)
     assert angles.shape == (23, 23)
     assert angles.any()
