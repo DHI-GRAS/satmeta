@@ -128,7 +128,7 @@ def get_angles_with_gref(root, group, meta=None):
 
 def get_resample_angles_rasterio(
         root, group, dst_res=None, dst_transform=None,
-        dst_crs=None, dst_shape=None, meta=None):
+        dst_crs=None, dst_shape=None, meta=None, resampling=None):
     """Parse angles and resample to dst_res
 
     Parameters
@@ -148,6 +148,10 @@ def get_resample_angles_rasterio(
         destinatinon shape
     meta : dict, optional
         granule metadata
+    resampling : int, optional
+        resampling method
+        see rasterio.warp.Resampling
+        default: Resampling.bilinear
     """
     import rasterio.crs
     import rasterio.warp
@@ -156,6 +160,9 @@ def get_resample_angles_rasterio(
         meta = s2meta.parse_granule_metadata_xml(root)
     angles_raw, src_transform, src_crs = get_angles_with_gref(
             root, group, meta=meta)
+
+    if resampling is None:
+        resampling = rasterio.warp.Resampling.bilinear
 
     # convert to rasterio CRS
     src_crs = rasterio.crs.CRS(src_crs)
@@ -200,7 +207,7 @@ def get_resample_angles_rasterio(
             dst_transform=dst_transform,
             dst_crs=dst_crs,
             dst_shape=dst_shape,
-            resampling=0)
+            resampling=resampling)
 
 
 def get_resample_angles_imresize(

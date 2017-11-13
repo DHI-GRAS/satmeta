@@ -1,4 +1,7 @@
-def resample(source, src_transform, src_crs, dst_shape,
+
+
+def resample(
+        source, src_transform, src_crs, dst_shape,
         dst_transform=None, dst_crs=None,
         resampling=None):
     """Resample data
@@ -20,8 +23,9 @@ def resample(source, src_transform, src_crs, dst_shape,
         destination coordinate reference system
         default: same as src_crs
     resampling : int
-        resampling method from rasterio.warp.Resampling
-        default: bilinear
+        resampling method
+        see rasterio.warp.Resampling
+        default: Resampling.bilinear
 
     Returns
     -------
