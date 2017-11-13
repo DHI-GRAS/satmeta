@@ -134,7 +134,6 @@ def _postprocess_rescaling(rescaling_dict):
         nbands = NBANDS[group]
         for operation in rescaling_dict[group]:
             vv = rescaling_dict[group][operation]
-            print(vv)
             if not len(vv) == nbands:
                 raise ValueError('Expecting values for all {} bands'.format(nbands))
             rescaling_dict[group][operation] = [v[1] for v in sorted(vv)]
