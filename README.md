@@ -32,21 +32,18 @@ The `satmeta.s2.angles_2d` module has functions for parsing Sentinel 2
 Sun and Viewing Incidence angles in 2D. These come on 5000 m resolution grids.
 
 There are functions to resample these grids to any other resolution,
-either using `scipy` and `PIL` (the `scipy.misc.imresize` function) or 
+either using `scipy` and `PIL` (from the `scipy.misc.imresize` function) or 
 `rasterio.warp.reproject`.
 
-If you want to resample angles, you need to install either of these dependencies.
-Currently, `pil` is only available for Python 2 and the `rasterio` method only works
-on Python 3.6.
-
-So depending on your system, install the dependencies, preferably with `conda`:
+If you want to resample angles, you need to install either of these dependencies,
+preferably with `conda`:
 
 ```
-conda install scipy pil  # Python 2
+conda install scipy pillow
 ```
 
 or
 
 ```
-conda install rasterio -c conda-forge/label/dev  # Python 3
+conda install rasterio -c conda-forge/label/dev
 ```
