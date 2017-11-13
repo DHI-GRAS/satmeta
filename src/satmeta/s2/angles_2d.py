@@ -201,16 +201,18 @@ def _get_resample_angles_rasterio(
     if dst_shape is None:
         dst_shape = angles_raw.shape
 
-    angles_filled = np.ma.masked_invalid(angles_raw).filled(999)
+    angles_filled = np.ma.masked_invalid(angles_raw).filled(np.nan)
 
     return utils.resample(
-            angles_filled,
-            src_transform=src_transform,
-            src_crs=src_crs,
-            dst_transform=dst_transform,
-            dst_crs=dst_crs,
-            dst_shape=dst_shape,
-            resampling=resampling)
+        angles_filled,
+        src_transform=src_transform,
+        src_crs=src_crs,
+        dst_transform=dst_transform,
+        dst_crs=dst_crs,
+        dst_shape=dst_shape,
+        resampling=resampling,
+        src_nodata=np.nan,
+        dst_nodata=np.nan)
 
 
 def _get_resample_angles_imresize(

@@ -3,7 +3,7 @@
 def resample(
         source, src_transform, src_crs, dst_shape,
         dst_transform=None, dst_crs=None,
-        resampling=None):
+        resampling=None, **reprojectkw):
     """Resample data
 
     Parameters
@@ -26,6 +26,8 @@ def resample(
         resampling method
         see rasterio.warp.Resampling
         default: Resampling.bilinear
+    **reprojectkw : additional keyword arguments
+        passed to rasterio.warp.reproject
 
     Returns
     -------
@@ -50,6 +52,7 @@ def resample(
         src_crs=src_crs,
         dst_transform=dst_transform,
         dst_crs=dst_crs,
-        resampling=resampling)
+        resampling=resampling,
+        **reprojectkw)
 
     return destination
