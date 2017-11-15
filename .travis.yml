@@ -5,6 +5,7 @@ python:
 before_install:
   - pip install -U pip
 install:
+  - sudo apt-get install python-imaging
   - pip install codecov
   - pip install -r requirements.txt
   - pip install -e .[test]
