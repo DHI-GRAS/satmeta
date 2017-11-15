@@ -125,9 +125,25 @@ def _get_angles_with_gref(root, group, meta=None):
     return angles_raw, src_transform, src_crs
 
 
+def _extrapolate_nan(a_raw):
+    """Fill NaN with bivariate splite fit"""
+    import scipy.interpolate
+    good = np.isfinite(a_raw)
+    if np.all(good):
+        return a_raw
+    x, y = np.where(good)
+    z = a_raw[good]
+    f = scipy.interpolate.SmoothBivariateSpline(x, y, z)
+    xbad, ybad = np.where(~good)
+    a_raw_filled = a_raw.copy()
+    a_raw_filled[~good] = f.ev(xbad, ybad)
+    return a_raw_filled
+
+
 def _get_resample_angles_rasterio(
         root, group, dst_res=None, dst_transform=None,
-        dst_crs=None, dst_shape=None, meta=None, resampling=None):
+        dst_crs=None, dst_shape=None, extrapolate=True,
+        meta=None, resampling=None):
     """Parse angles and resample to dst_res
 
     Parameters
@@ -145,6 +161,8 @@ def _get_resample_angles_rasterio(
         destination CRS
     dst_shape : tuple, optional
         destinatinon shape
+    extrapolate : bool
+        extrapolate to fill NaN areas
     meta : dict, optional
         granule metadata
     resampling : int, optional
@@ -155,13 +173,13 @@ def _get_resample_angles_rasterio(
     import rasterio.crs
     import rasterio.warp
 
+    if resampling is None:
+        resampling = rasterio.warp.Resampling.bilinear
+
     if meta is None:
         meta = s2meta.parse_granule_metadata_xml(root)
     angles_raw, src_transform, src_crs = _get_angles_with_gref(
             root, group, meta=meta)
-
-    if resampling is None:
-        resampling = rasterio.warp.Resampling.bilinear
 
     # convert to rasterio CRS
     src_crs = rasterio.crs.CRS(src_crs)
@@ -201,10 +219,10 @@ def _get_resample_angles_rasterio(
     if dst_shape is None:
         dst_shape = angles_raw.shape
 
-    angles_filled = np.ma.masked_invalid(angles_raw).filled(np.nan)
-
+    if extrapolate:
+        angles_raw = _extrapolate_nan(angles_raw)
     return utils.resample(
-        angles_filled,
+        angles_raw,
         src_transform=src_transform,
         src_crs=src_crs,
         dst_transform=dst_transform,
