@@ -15,7 +15,7 @@ def test_find_read_granule_metafiles_ZIP():
         str_iter = s2metafile.find_read_granule_metafiles_ZIP(infile)
         mstrs = list(str_iter)
         assert len(mstrs) == 1
-        assert b'xml' in mstrs[0]
+        assert u'xml' in mstrs[0]
 
 
 def test_find_granule_metafiles_in_SAFE():
@@ -31,6 +31,7 @@ def test_find_read_granule_metafiles_ZIP_tile_name():
         str_iter = s2metafile.find_read_granule_metafiles_ZIP(infile, tile_name=tile_name)
         mstrs = list(str_iter)
         assert len(mstrs) == 1
+        assert u'xml' in mstrs[0]
 
 
 def test_extract_all_granule_metafiles():

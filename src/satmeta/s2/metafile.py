@@ -10,6 +10,13 @@ from ..exceptions import MetaDataError
 logger = logging.getLogger(__name__)
 
 
+def _ensure_str(s):
+    try:
+        return s.decode('utf-8')
+    except AttributeError:
+        return s
+
+
 def find_metafile_in_SAFE(inSAFE):
     """Find metafile in SAFE folder"""
     def _filterfunc(fn):
@@ -26,7 +33,8 @@ def read_metafile_SAFE(inSAFE):
     """Find and read metafile file in SAFE folder"""
     metafile = find_metafile_in_SAFE(inSAFE)
     with open(metafile) as f:
-        return f.read()
+        mstr = f.read()
+    return _ensure_str(mstr)
 
 
 def find_metafile_in_zip(names):
@@ -57,7 +65,8 @@ def read_metafile_ZIP(zipfilepath):
     try:
         with zipfile.ZipFile(zipfilepath) as zf:
             metafile = find_metafile_in_zip(zf.namelist())
-            return zf.open(metafile).read()
+            mstr = zf.open(metafile).read()
+            return _ensure_str(mstr)
     except zipfile.BadZipfile as e:
         raise MetaDataError('Unable to read zip file \'{}\': {}'.format(zipfilepath, e))
 
@@ -169,7 +178,8 @@ def find_read_granule_metafiles_ZIP(zipfilepath, **findkwargs):
             metafiles = find_granule_metafiles_in_zip_names(names, **findkwargs)
             logger.debug('Found %d granule metadata files.', len(metafiles))
             for metafile in metafiles:
-                yield zf.open(metafile).read()
+                mstr = zf.open(metafile).read()
+                yield _ensure_str(mstr)
     except zipfile.BadZipfile as e:
         raise MetaDataError('Unable to read zip file \'{}\': {}'.format(zipfilepath, str(e)))
 
@@ -197,11 +207,11 @@ def find_read_granule_metafiles(input_path, tile_name=None, **findkwargs):
                 input_path, tile_name=tile_name, **findkwargs):
             with open(fn) as fin:
                 mstr = fin.read()
-            yield mstr
+            yield _ensure_str(mstr)
     else:
         for mstr in find_read_granule_metafiles_ZIP(
                 input_path, tile_name=tile_name, **findkwargs):
-            yield mstr
+            yield _ensure_str(mstr)
 
 
 def extract_metafile(input_path, outfile):
