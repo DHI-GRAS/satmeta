@@ -132,11 +132,10 @@ def _extrapolate_nan(a_raw):
     if np.all(good):
         return a_raw
     x, y = np.where(good)
-    z = a_raw[good]
-    f = scipy.interpolate.SmoothBivariateSpline(x, y, z)
+    f = scipy.interpolate.Rbf(x, y, a_raw[good])
     xbad, ybad = np.where(~good)
     a_raw_filled = a_raw.copy()
-    a_raw_filled[~good] = f.ev(xbad, ybad)
+    a_raw_filled[~good] = f(xbad, ybad)
     return a_raw_filled
 
 
