@@ -1,6 +1,7 @@
 from satmeta import COMMON_KEYS
 import satmeta.s2.meta as s2meta
 
+from . import data as DATA
 from .data import test_data
 from .data import test_tile_ID
 
@@ -10,6 +11,12 @@ def test_parse_metadata():
         infile = test_data[key]['xml']
         meta = s2meta.parse_metadata(infile)
         assert isinstance(meta, dict)
+
+
+def test_parse_metadata_specialchar():
+    infile = DATA.XML_WITH_SPECIALCHAR
+    meta = s2meta.parse_metadata(infile)
+    assert isinstance(meta, dict)
 
 
 def test_parse_granule_metadata():
