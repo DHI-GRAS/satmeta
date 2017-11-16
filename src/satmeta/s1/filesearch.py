@@ -67,17 +67,8 @@ def filter_infiles_by_date(infiles, start_date=None, end_date=None):
 
 def filter_rel_orbit_numbers(infiles, rel_orbit_numbers):
     """Filter files that have an orbit number specified in rel_orbit_numbers"""
-    if not rel_orbit_numbers:
-        return infiles
-
-    try:
-        from tqdm import tqdm
-        infile_iter = tqdm(infiles, desc='Orbit number filter', unit='input file')
-    except ImportError:
-        infile_iter = infiles
-
     infiles_filtered = []
-    for infile in infile_iter:
+    for infile in infiles:
         try:
             o = meta.get_rel_orbit_number(infile)
         except meta.MetaDataError as me:

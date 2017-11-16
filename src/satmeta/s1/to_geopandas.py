@@ -1,5 +1,4 @@
 import logging
-import warnings
 
 import geopandas as gpd
 import pandas as pd
@@ -56,17 +55,13 @@ def meta_as_geopandas_parallel(infiles):
     gdf : GeoDataFrame
         metadata for all files
         with additional field 'filepath'
-
-    Note
-    ----
-    Additional requirement: joblib
     """
     import multiprocessing
-    import joblib
     num_cores = multiprocessing.cpu_count()
     njobs = min((num_cores, 4))
-    gss = joblib.Parallel(n_jobs=njobs)(
-            joblib.delayed(_get_meta_as_geoseries_failsafe)(infile) for infile in infiles)
+
+    p = multiprocessing.Pool(njobs)
+    gss = p.map(_get_meta_as_geoseries_failsafe, infiles)
     gss_good = []
     for infile, gs in zip(infiles, gss):
         if isinstance(gs, Exception):
