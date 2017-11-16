@@ -2,9 +2,7 @@ import os
 import re
 import glob
 import logging
-import multiprocessing
-
-import numpy as np
+import functools
 
 from satmeta.s1 import meta
 
@@ -36,7 +34,7 @@ def find_input_files(indir, formats=['zip', 'SAFE'], ignore_empty=True):
         filepattern = os.path.join(indir, search_patterns[fmtkey])
         logger.debug('File search pattern is \'%s\'.', filepattern)
         infiles_found = glob.glob(filepattern)
-        logger.info('Found %d files of format %s', len(infiles_found), fmtkey)
+        logger.debug('Found %d files of format %s', len(infiles_found), fmtkey)
         if ignore_empty and fmtkey == 'zip':
             infiles_found = list(filter(os.path.getsize, infiles_found))
         infiles += infiles_found
@@ -54,33 +52,23 @@ def filter_infiles_by_date(infiles, start_date=None, end_date=None):
     start_date, end_date : datetime.datetime
         date range
     """
-    if not infiles:
-        return infiles
-    dates = np.array([meta.dates_from_fname(fname, zero_time=True)[0] for fname in infiles])
-
-    if start_date is None:
-        start_date = dates.min()
-
-    if end_date is None:
-        end_date = dates.max()
-
-    mask = (dates >= start_date) & (dates <= end_date)
-    return list(np.array(infiles, dtype=object)[mask])
+    infiles_filtered = []
+    for infile in infiles:
+        date = meta.dates_from_fname(infile, zero_time=True)[0]
+        if start_date is not None:
+            if date < start_date:
+                continue
+        if end_date is not None:
+            if date > end_date:
+                continue
+        infiles_filtered.append(infile)
+    return infiles_filtered
 
 
 def filter_rel_orbit_numbers(infiles, rel_orbit_numbers):
     """Filter files that have an orbit number specified in rel_orbit_numbers"""
-    if not rel_orbit_numbers:
-        return infiles
-
-    try:
-        from tqdm import tqdm
-        infile_iter = tqdm(infiles, desc='Orbit number filter', unit='input file')
-    except ImportError:
-        infile_iter = infiles
-
     infiles_filtered = []
-    for infile in infile_iter:
+    for infile in infiles:
         try:
             o = meta.get_rel_orbit_number(infile)
         except meta.MetaDataError as me:
@@ -112,11 +100,9 @@ def check_same_infile_type(infiles):
 
 def _metadata_matches(metadata, rel_orbit_numbers=None, aoi=None):
     matches = True
-    if aoi is not None:
-        matches &= metadata['footprint'].overlaps(aoi)
-        if not matches:
-            return matches
-    if rel_orbit_numbers:
+    if matches and aoi is not None:
+        matches &= metadata['footprint'].intersects(aoi)
+    if matches and rel_orbit_numbers:
         matches &= metadata['relative_orbit_number'] in rel_orbit_numbers
     return matches
 
@@ -164,22 +150,6 @@ def filter_input_files(infiles, start_date=None, end_date=None, rel_orbit_number
     if not filterkw:
         return infiles
 
-    try:
-        from tqdm import tqdm
-        infile_iter = tqdm(infiles, desc='input file filter', unit='input file')
-    except ImportError:
-        infile_iter = infiles
-
-    try:
-        import joblib
-        num_cores = multiprocessing.cpu_count()
-        njobs = min((num_cores, 4))
-        mask = joblib.Parallel(n_jobs=njobs)(
-                joblib.delayed(_filter_infile)(infile, **filterkw) for infile in infile_iter)
-    except ImportError:
-        mask = [_filter_infile(infile, **filterkw) for infile in infiles]
-
-    infiles = list(np.array(infiles, dtype='object')[mask])
-    logger.debug(
-            'Number of files matching filtering criteria: %d', len(infiles))
+    filterfunc = functools.partial(_filter_infile, **filterkw)
+    infiles = list(filter(filterfunc, infiles))
     return infiles

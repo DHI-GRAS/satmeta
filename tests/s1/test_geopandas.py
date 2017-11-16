@@ -1,34 +1,45 @@
+import datetime
+
 import pytest
+
+try:
+    import satmeta.s1.to_geopandas as s1geopandas
+except ImportError:
+    pytestmark = pytest.mark.skip(reason='geopandas not installed')
 
 from .data import test_data
 
-pexpect = pytest.importorskip('geopandas')
-
-try:
-    import geopandas as gpd
-    _no_geopandas = False
-except ImportError:
-    _no_geopandas = True
-
-try:
-    import joblib
-    _no_joblib = False
-except ImportError:
-    _no_joblib = True
+gpd = pytest.importorskip('geopandas')
 
 
-@pytest.mark.skipif(_no_geopandas, reason='No geopandas')
 def test_meta_as_geopandas():
-    from satmeta.s1 import to_geopandas
-    safes = [test_data['SAFE'], test_data['zip']]
-    gdf = to_geopandas.meta_as_geopandas(safes)
+    infiles = [test_data['SAFE'], test_data['zip']]
+    gdf = s1geopandas.meta_as_geopandas(infiles)
     assert isinstance(gdf, gpd.GeoDataFrame)
 
 
-@pytest.mark.skipif(_no_geopandas, reason='No geopandas')
-@pytest.mark.skipif(_no_joblib, reason='No joblib')
-def test_meta_as_geopandas_parallel():
-    from satmeta.s1 import to_geopandas
-    safes = [test_data['SAFE'], test_data['zip']]
-    gdf = to_geopandas.meta_as_geopandas_parallel(safes)
+def test_meta_as_geopandas_multiprocessing():
+    infiles = [test_data['SAFE'], test_data['zip']]
+    gdf = s1geopandas.meta_as_geopandas(infiles, multiprocessing_above=0)
     assert isinstance(gdf, gpd.GeoDataFrame)
+
+
+def test_group_gdf():
+    infiles = [test_data['SAFE'], test_data['zip']]
+    gdf = s1geopandas.meta_as_geopandas(infiles)
+    grouped = s1geopandas.group_gdf(gdf)
+    for meta, infiles_group in grouped:
+        assert isinstance(meta, dict)
+        break
+
+
+def test_filter_gdf():
+    infiles = [test_data['SAFE'], test_data['zip']]
+    gdf = s1geopandas.meta_as_geopandas(infiles)
+    gdf_filtered = s1geopandas.filter_gdf(
+        gdf,
+        rel_orbit_numbers=gdf['relative_orbit_number'].values,
+        footprint_overlaps=gdf['footprint'].values[0],
+        start_date=datetime.datetime(2016, 1, 1),
+        end_date=datetime.datetime(2016, 12, 31))
+    assert len(gdf) == len(gdf_filtered)

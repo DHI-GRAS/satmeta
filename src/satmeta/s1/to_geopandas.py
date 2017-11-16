@@ -1,5 +1,5 @@
 import logging
-import warnings
+import multiprocessing
 
 import geopandas as gpd
 import pandas as pd
@@ -43,42 +43,7 @@ def _merge_geoseries(gss):
     return gpd.GeoDataFrame(gss).set_geometry('footprint', crs={'init': 'EPSG:4326'})
 
 
-def meta_as_geopandas_parallel(infiles):
-    """Get metadata as GeoDataFrame in parallel
-
-    Parameters
-    ----------
-    infiles : list of str
-        paths to S1 data files
-
-    Returns
-    -------
-    gdf : GeoDataFrame
-        metadata for all files
-        with additional field 'filepath'
-
-    Note
-    ----
-    Additional requirement: joblib
-    """
-    import multiprocessing
-    import joblib
-    num_cores = multiprocessing.cpu_count()
-    njobs = min((num_cores, 4))
-    gss = joblib.Parallel(n_jobs=njobs)(
-            joblib.delayed(_get_meta_as_geoseries_failsafe)(infile) for infile in infiles)
-    gss_good = []
-    for infile, gs in zip(infiles, gss):
-        if isinstance(gs, Exception):
-            logger.warn(
-                    'Reading metadata from \'%s\' failed with error \'%s\'.',
-                    infile, gs)
-            continue
-        gss_good.append(gs)
-    return _merge_geoseries(gss_good)
-
-
-def meta_as_geopandas(infiles):
+def meta_as_geopandas(infiles, multiprocessing_above=40):
     """Get metadata as GeoDataFrame
 
     Parameters
@@ -91,17 +56,25 @@ def meta_as_geopandas(infiles):
     gdf : GeoDataFrame
         metadata for all files
         with additional field 'filepath'
+    multiprocessing_above : int
+        use multiprocessing above this number of input files
+        set to None to disable
     """
-    gss = []
-    for infile in infiles:
-        try:
-            gs = get_meta_as_geoseries(infile)
-            gss.append(gs)
-        except MetaDataError:
+    if multiprocessing_above is not None and len(infiles) > multiprocessing_above:
+        p = multiprocessing.Pool()
+        gss = p.map(_get_meta_as_geoseries_failsafe, infiles)
+        p.close()
+    else:
+        gss = [_get_meta_as_geoseries_failsafe(infile) for infile in infiles]
+    gss_good = []
+    for infile, gs in zip(infiles, gss):
+        if isinstance(gs, Exception):
             logger.warn(
                     'Reading metadata from \'%s\' failed with error \'%s\'.',
                     infile, gs)
-    return _merge_geoseries(gss)
+            continue
+        gss_good.append(gs)
+    return _merge_geoseries(gss_good)
 
 
 def _get_footprint_union(gdf):
@@ -157,16 +130,16 @@ def filter_gdf(
     start_date, end_date : datetime.datetime or datestr
         date interval
     """
-    if start_date is not None:
-        mask = gdf['sensing_start'] >= start_date
+    if len(gdf) and start_date is not None:
+        mask = gdf['sensing_end'] >= start_date
         gdf = gdf[mask]
-    if end_date is not None:
-        mask = gdf['sensing_end'] >= end_date
+    if len(gdf) and end_date is not None:
+        mask = gdf['sensing_start'] <= end_date
         gdf = gdf[mask]
-    if rel_orbit_numbers is not None:
+    if len(gdf) and rel_orbit_numbers is not None:
         mask = gdf.apply((lambda d: d['relative_orbit_number'] in rel_orbit_numbers), axis=1)
         gdf = gdf[mask]
-    if footprint_overlaps is not None:
-        mask = gdf.overlaps(footprint_overlaps)
+    if len(gdf) and footprint_overlaps is not None:
+        mask = gdf.intersects(footprint_overlaps)
         gdf = gdf[mask]
     return gdf

@@ -20,7 +20,7 @@ install:
   - conda info -a
 
   - conda config --add channels conda-forge
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION scipy pillow
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION scipy pillow geopandas
   - source activate test-environment
   - conda install rasterio -c conda-forge/label/dev
   - pip install pytest codecov
