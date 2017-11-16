@@ -1,4 +1,5 @@
 import logging
+import codecs
 
 import lxml.etree
 import shapely.geometry
@@ -8,18 +9,18 @@ logger = logging.getLogger(__name__)
 
 
 def get_root(metadatafile=None, metadatastr=None):
-    if metadatafile:
-        root = lxml.etree.parse(metadatafile).getroot()
-    elif metadatastr:
-        try:
-            metadatastr = metadatastr.encode()
-        except AttributeError:
-            pass
-        except UnicodeEncodeError:
-            pass
-        root = lxml.etree.fromstring(metadatastr)
-    else:
+    if metadatafile is not None:
+        with codecs.open(metadatafile, encoding='latin_1') as fin:
+            metadatastr = fin.read()
+    elif metadatastr is None:
         raise ValueError('Either metadatafile or metadatastr must be specified.')
+    try:
+        # convert to bytes
+        metadatastr = metadatastr.encode(errors='ignore')
+    except AttributeError:
+        # str is already bytes
+        pass
+    root = lxml.etree.fromstring(metadatastr)
     return root
 
 
