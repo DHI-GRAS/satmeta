@@ -61,8 +61,9 @@ def meta_as_geopandas(infiles, multiprocessing_above=40):
         set to None to disable
     """
     if multiprocessing_above is not None and len(infiles) > multiprocessing_above:
-        with multiprocessing.Pool() as p:
-            gss = p.map(_get_meta_as_geoseries_failsafe, infiles)
+        p = multiprocessing.Pool()
+        gss = p.map(_get_meta_as_geoseries_failsafe, infiles)
+        p.close()
     else:
         gss = [_get_meta_as_geoseries_failsafe(infile) for infile in infiles]
     gss_good = []
