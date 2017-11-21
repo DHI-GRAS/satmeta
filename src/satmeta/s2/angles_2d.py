@@ -142,7 +142,7 @@ def _extrapolate_nan(a_raw):
 def _get_resample_angles_rasterio(
         root, group, dst_res=None, dst_transform=None,
         dst_crs=None, dst_shape=None, extrapolate=True,
-        meta=None, resampling=None):
+        resampling=None, meta=None):
     """Parse angles and resample to dst_res
 
     Parameters
@@ -153,7 +153,6 @@ def _get_resample_angles_rasterio(
         path to angles tag
     dst_res : int, optional
         target resolution
-        NB: overrides dst_shape, dst_transform, and dst_crs
     dst_transform : Affine, optional
         transform to resample to
     dst_crs : dict or CRS, optional
@@ -162,12 +161,13 @@ def _get_resample_angles_rasterio(
         destinatinon shape
     extrapolate : bool
         extrapolate to fill NaN areas
-    meta : dict, optional
-        granule metadata
     resampling : int, optional
         resampling method
         see rasterio.warp.Resampling
         default: Resampling.bilinear
+    meta : dict, optional
+        granule metadata
+        to avoid parsing twice
     """
     import rasterio.crs
     import rasterio.warp
@@ -175,34 +175,18 @@ def _get_resample_angles_rasterio(
     if resampling is None:
         resampling = rasterio.warp.Resampling.bilinear
 
-    if meta is None:
-        meta = s2meta.parse_granule_metadata_xml(root)
     angles_raw, src_transform, src_crs = _get_angles_with_gref(
-            root, group, meta=meta)
+        root, group, meta=meta)
 
-    # convert to rasterio CRS
+    # convert to rasterio CRS for safe comparison
     src_crs = rasterio.crs.CRS(src_crs)
     if dst_crs is not None:
         dst_crs = rasterio.crs.CRS(dst_crs)
 
-    if dst_res is not None:
-        if any([v is not None for v in [dst_transform, dst_shape, dst_crs]]):
-            raise ValueError(
-                'You provided `dst_res`, which is meant to '
-                'override `dst_transform`, `dst_crs`, and `dst_shape`.')
-        try:
-            dst_transform = meta['image_transform'][dst_res]
-            dst_shape = meta['image_shape'][dst_res]
-            dst_crs = src_crs
-        except KeyError:
-            raise ValueError(
-                    'You must either specify `dst_crs` and '
-                    '`dst_transform` or choose a predefined resolution ({}).'
-                    .format(s2meta._all_res))
-
     if dst_crs is None:
         dst_crs = src_crs
-    elif dst_crs != src_crs:
+
+    if dst_crs != src_crs or dst_res is not None:
         # compute new transform and shape
         src_bounds = converters.trans_shape_to_bounds(
                 src_transform, angles_raw.shape)
@@ -210,13 +194,12 @@ def _get_resample_angles_rasterio(
         dst_transform, dst_width, dst_height = (
                 rasterio.warp.calculate_default_transform(
                     src_crs, dst_crs, src_width, src_height,
-                    *src_bounds))
+                    *src_bounds,
+                    resolution=dst_res))
         dst_shape = (dst_width, dst_height)
 
     if dst_transform is None:
         dst_transform = src_transform
-    if dst_shape is None:
-        dst_shape = angles_raw.shape
 
     if extrapolate:
         angles_raw = _extrapolate_nan(angles_raw)
@@ -233,8 +216,8 @@ def _get_resample_angles_rasterio(
 
 
 def _get_resample_angles_imresize(
-        root, group, dst_res=None, dst_shape=None, meta=None):
-    """Parse angles and resample to dst_res
+        root, group, dst_shape, interp='bilinear', extrapolate=True):
+    """Parse angles and resample with scipy.misc.imresize
 
     Parameters
     ----------
@@ -242,23 +225,46 @@ def _get_resample_angles_imresize(
         root of granule metadata XML doc
     group : str
         path to angles tag
-    dst_res : int
-        target resolution
+    dst_shape : tuple, optional
+        destination shape
+    interp : str
+        interpolation method
+    extrapolate : bool
+        extrapolate to fill NaN areas
     """
     from scipy.misc import imresize
-
-    if meta is None:
-        meta = s2meta.parse_granule_metadata_xml(root)
     angles_raw = _get_angles_any_type(root, group)
+    if extrapolate:
+        angles_raw = _extrapolate_nan(angles_raw)
+    return imresize(angles_raw, dst_shape, interp=interp, mode='F')
 
-    if dst_res is not None:
-        dst_shape = meta['image_shape'][dst_res]
-    elif dst_shape is None:
-        raise ValueError(
-                'You must either specify `dst_shape` '
-                'or choose a predefined resolution ({}).'
-                ''.format(s2meta._all_res))
-    return imresize(angles_raw, dst_shape, interp='bilinear', mode='F')
+
+def _get_resample_angles_zoom(
+        root, group, dst_shape=None, zoom=None, order=3, extrapolate=True):
+    """Parse angles and resample with scipy.ndimage.zoom
+
+    Parameters
+    ----------
+    root : lxml root
+        root of granule metadata XML doc
+    group : str
+        path to angles tag
+    dst_shape : tuple, optional
+        destination shape
+    zoom : tuple or int, optional
+        used instead of dst_shape
+    order : int
+        spline interpolation order
+    extrapolate : bool
+        extrapolate to fill NaN areas
+    """
+    import scipy.ndimage
+    angles_raw = _get_angles_any_type(root, group)
+    if extrapolate:
+        angles_raw = _extrapolate_nan(angles_raw)
+    if zoom is None:
+        zoom = np.array(dst_shape) / np.array(angles_raw.shape)
+    return scipy.ndimage.zoom(angles_raw, zoom=zoom, order=order, cval=np.nan)
 
 
 def _generate_group_name(angle, angle_dir, bandId):
@@ -295,7 +301,6 @@ def parse_angles(
     ndarray : angles
     """
     root = converters.get_root(metadatafile, metadatastr)
-
     angles_data = defaultdict(dict)
     for angle in angles:
         for angle_dir in angle_dirs:
@@ -309,8 +314,8 @@ def parse_resample_angles(
         angles=_all_angles,
         angle_dirs=_all_dirs,
         bandId=0,
-        dst_res=None,
-        resample_method='imresize',
+        dst_res_predefined=None,
+        resample_method='rasterio',
         **resample_kwargs):
     """Parse angles from GRANULE metadata and resample
 
@@ -330,6 +335,9 @@ def parse_resample_angles(
         use this band to retrieve
         viewing angles
         default: 0
+    dst_res_predefined : int, optional
+        predefined destination resolution
+        one of 10, 20, 60
     resample_method : str in ['imresize', 'rasterio']
         method to use for resampling
         either based on scipy.misc.imresize
@@ -342,20 +350,31 @@ def parse_resample_angles(
     nested dict : angles > angles_dirs > ndarray
         angles dictionary
     """
-    if resample_method == 'imresize':
-        _resample_func = _get_resample_angles_imresize
-    elif resample_method == 'rasterio':
-        _resample_func = _get_resample_angles_rasterio
-    else:
-        raise ValueError('resample_method must be `imresize` or `rasterio`.')
+    resample_funcs = {
+        'rasterio': _get_resample_angles_rasterio,
+        'zoom': _get_resample_angles_zoom,
+        'imresize': _get_resample_angles_imresize}
+
+    try:
+        resample_func = resample_funcs[resample_method]
+    except KeyError:
+        raise ValueError('resample_method must be one of {}.'.format(resample_funcs))
 
     root = converters.get_root(metadatafile, metadatastr)
     meta = s2meta.parse_granule_metadata_xml(root)
+
+    kw = {}
+    if dst_res_predefined is not None:
+        kw['dst_shape'] = meta['image_shape'][dst_res_predefined]
+        if resample_method == 'rasterio':
+            kw['dst_transform'] = meta['image_transform'][dst_res_predefined]
+            kw['meta'] = meta
+
+    kw.update(resample_kwargs)
 
     angles_data = defaultdict(dict)
     for angle in angles:
         for angle_dir in angle_dirs:
             group = _generate_group_name(angle, angle_dir, bandId=bandId)
-            angles_data[angle][angle_dir] = _resample_func(
-                    root, group, meta=meta, dst_res=dst_res, **resample_kwargs)
+            angles_data[angle][angle_dir] = resample_func(root, group, **kw)
     return angles_data

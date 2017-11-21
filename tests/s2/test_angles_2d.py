@@ -14,6 +14,13 @@ except ImportError:
 skip_rasterio = pytest.mark.skipif(
         no_rasterio, reason='rasterio not available')
 
+try:
+    import scipy
+    no_scipy = False
+except ImportError:
+    no_scipy = True
+skip_scipy = pytest.mark.skipif(
+        no_scipy, reason='scipy not available')
 
 try:
     from scipy.misc import imresize
@@ -22,6 +29,12 @@ except ImportError:
     no_imresize = True
 skip_imresize = pytest.mark.skipif(
         no_imresize, reason='imresize not available')
+
+RESAMPLE_TEST_KW = dict(
+    dst_res_predefined=60,
+    angles=['Sun'],
+    angle_dirs=['Zenith'],
+    extrapolate=False)
 
 
 def test_parse_angles_keys():
@@ -56,21 +69,28 @@ def test_get_angles_with_gref():
 def test_parse_resample_angles_rasterio():
     infile = test_data['new']['granule_xml']
     adict = s2angles2d.parse_resample_angles(
-            infile, dst_res=60,
-            resample_method='rasterio',
-            angles=['Sun'], angle_dirs=['Zenith'])
+        infile, resample_method='rasterio', **RESAMPLE_TEST_KW)
     a = adict['Sun']['Zenith']
     assert a.shape == (1830, 1830)
     assert a.any()
 
 
+@skip_scipy
 @skip_imresize
 def test_parse_resample_angles_imresize():
     infile = test_data['new']['granule_xml']
     adict = s2angles2d.parse_resample_angles(
-            infile, dst_res=60,
-            resample_method='imresize',
-            angles=['Sun'], angle_dirs=['Zenith'])
+        infile, resample_method='imresize', **RESAMPLE_TEST_KW)
+    a = adict['Sun']['Zenith']
+    assert a.shape == (1830, 1830)
+    assert a.any()
+
+
+@skip_scipy
+def test_parse_resample_angles_zoom():
+    infile = test_data['new']['granule_xml']
+    adict = s2angles2d.parse_resample_angles(
+        infile, resample_method='zoom', **RESAMPLE_TEST_KW)
     a = adict['Sun']['Zenith']
     assert a.shape == (1830, 1830)
     assert a.any()
@@ -86,17 +106,19 @@ def test_parse_resample_angles_rasterio_dst_shape():
             resample_method='rasterio',
             angles=['Sun'], angle_dirs=['Zenith'],
             dst_transform=dst_transform,
-            dst_shape=dst_shape)
+            dst_shape=dst_shape,
+            extrapolate=False)
     a = adict['Sun']['Zenith']
     assert a.shape == dst_shape
 
 
 @skip_rasterio
+@skip_scipy
 def test_parse_resample_angles_rasterio_extrapolate():
     infile = test_data['new']['granule_xml']
     kw = dict(
         metadatafile=infile,
-        dst_res=60,
+        dst_res_predefined=60,
         resample_method='rasterio',
         angles=['Viewing_Incidence'],
         angle_dirs=['Zenith'])
