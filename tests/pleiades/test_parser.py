@@ -9,6 +9,13 @@ def test_parse_metadata():
     assert isinstance(metadata, dict)
 
 
+def test_parse_metadata_str():
+    with open(DIM_XML) as fin:
+        mstr = fin.read()
+    metadata = parser.parse_metadata(mstr)
+    assert isinstance(metadata, dict)
+
+
 def test_common_keys():
     metadata = parser.parse_metadata(DIM_XML)
     missing = (set(COMMON_KEYS) - set(metadata))

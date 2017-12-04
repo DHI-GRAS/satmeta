@@ -72,9 +72,9 @@ def _parse_metadata_xml(root):
 
 
 def parse_metadata(xmlfile_or_str):
-    if os.path.isfile(xmlfile_or_str):
-        root = converters.get_root(metadatafile=xmlfile_or_str)
-    else:
+    if xmlfile_or_str.startswith('<?xml'):
         root = converters.get_root(metadatastr=xmlfile_or_str)
+    else:
+        root = converters.get_root(metadatafile=xmlfile_or_str)
     return _parse_metadata_xml(root)
 
