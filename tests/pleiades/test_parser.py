@@ -10,8 +10,12 @@ def test_parse_metadata():
 
 
 def test_parse_metadata_str():
-    with open(DIM_XML) as fin:
+    with open(DIM_XML, 'rb') as fin:
         mstr = fin.read()
+    try:
+        mstr = mstr.decode('utf-8')
+    except AttributeError:
+        pass
     metadata = parser.parse_metadata(mstr)
     assert isinstance(metadata, dict)
 
