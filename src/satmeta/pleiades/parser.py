@@ -12,8 +12,6 @@ COPY_RENAME_INT = {
     'NCOLS': 'width',
     'NBANDS': 'count'}
 
-BAND_ORDER = ['B0', 'B1', 'B2', 'B3']
-
 
 def _get_single_multi(root, names):
     parts = {}
@@ -69,9 +67,15 @@ def _get_gain_bias(root):
     return gain_bias
 
 
-def _postproc_gain_bias_values(gain_bias):
+def _get_band_order(root):
+    """Returns B0, B1, B2, B3 in some order"""
+    ee = root.findall('.//Band_Display_Order/*')
+    return [e.text for e in ee]
+
+
+def _postproc_gain_bias_values(gain_bias, band_order):
     values = dict(gain=[], bias=[])
-    for band in BAND_ORDER:
+    for band in band_order:
         for key in ['gain', 'bias']:
             values[key].append(gain_bias[band][key])
     return values
@@ -84,7 +88,10 @@ def _parse_metadata_xml(root):
     meta['sensing_time'] = _get_sensing_time(root)
     meta['footprint'] = _get_footprint(root)
     meta['calibration'] = _get_gain_bias(root)
-    meta['calibration_values'] = _postproc_gain_bias_values(meta['calibration'])
+    meta['band_order'] = _get_band_order(root)
+    meta['calibration_values'] = _postproc_gain_bias_values(
+        meta['calibration'], meta['band_order'])
+    meta['ntiles'] = int(converters.get_single(root, 'NTILES'))
     for name, key in COPY_RENAME.items():
         meta[key] = converters.get_single(root, name)
     for name, key in COPY_RENAME_INT.items():
