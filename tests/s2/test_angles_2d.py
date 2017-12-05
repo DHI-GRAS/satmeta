@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 import numpy as np
 
@@ -13,6 +15,9 @@ except ImportError:
     no_rasterio = True
 skip_rasterio = pytest.mark.skipif(
         no_rasterio, reason='rasterio not available')
+
+skip_python2 = pytest.mark.skipif(sys.version_info < (3, 5),
+                                  reason="requires python3.5")
 
 try:
     import scipy
@@ -65,6 +70,7 @@ def test_get_angles_with_gref():
     assert isinstance(crs, dict)
 
 
+@skip_python2
 @skip_rasterio
 def test_parse_resample_angles_rasterio():
     infile = test_data['new']['granule_xml']
@@ -96,6 +102,7 @@ def test_parse_resample_angles_zoom():
     assert a.any()
 
 
+@skip_python2
 @skip_rasterio
 def test_parse_resample_angles_rasterio_dst_shape():
     dst_shape = (200, 300)
@@ -112,6 +119,7 @@ def test_parse_resample_angles_rasterio_dst_shape():
     assert a.shape == dst_shape
 
 
+@skip_python2
 @skip_rasterio
 @skip_scipy
 def test_parse_resample_angles_rasterio_extrapolate():

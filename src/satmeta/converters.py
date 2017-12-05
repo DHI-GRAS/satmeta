@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 def get_root(metadatafile=None, metadatastr=None):
     if metadatafile is not None:
-        with codecs.open(metadatafile, encoding='latin_1') as fin:
+        with codecs.open(metadatafile, encoding='utf-8') as fin:
             metadatastr = fin.read()
     elif metadatastr is None:
         raise ValueError('Either metadatafile or metadatastr must be specified.')
@@ -20,8 +20,7 @@ def get_root(metadatafile=None, metadatastr=None):
     except AttributeError:
         # str is already bytes
         pass
-    root = lxml.etree.fromstring(metadatastr)
-    return root
+    return lxml.etree.fromstring(metadatastr)
 
 
 def _get_value(element, attrname=None, to_type=None):

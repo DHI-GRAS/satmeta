@@ -11,8 +11,6 @@ ZIP_old = os.path.join(testdatadir, 'old_format', 'S2A_OPER_PRD_MSIL1C_PDMC_2016
 GRANULE_new = os.path.join(SAFE_new, 'GRANULE', 'L1C_T33VUC_A008013_20170103T104428')
 GRANULE_old = os.path.join(SAFE_old, 'GRANULE', 'S2A_OPER_MSI_L1C_TL_SGS__20161205T171834_A007598_T33UVB_N02.04')
 
-XML_WITH_SPECIALCHAR = os.path.join(testdatadir, 'MTD_with_specialchar.xml')
-
 test_data = {
         'new': {
             'SAFE': SAFE_new,
