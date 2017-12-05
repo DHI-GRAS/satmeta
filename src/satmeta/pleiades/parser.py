@@ -1,5 +1,3 @@
-import os
-
 import dateutil.parser
 import shapely.geometry
 
@@ -13,6 +11,8 @@ COPY_RENAME_INT = {
     'NROWS': 'height',
     'NCOLS': 'width',
     'NBANDS': 'count'}
+
+BAND_ORDER = ['B0', 'B1', 'B2', 'B3']
 
 
 def _get_single_multi(root, names):
@@ -58,12 +58,33 @@ def _get_footprint(root):
     return shapely.geometry.Polygon(points)
 
 
+def _get_gain_bias(root):
+    rr = root.findall('.//Band_Radiance')
+    gain_bias = {}
+    for r in rr:
+        key = r.find('BAND_ID').text
+        gain_bias[key] = dict(
+            gain=float(r.find('GAIN').text),
+            bias=float(r.find('BIAS').text))
+    return gain_bias
+
+
+def _postproc_gain_bias_values(gain_bias):
+    values = dict(gain=[], bias=[])
+    for band in BAND_ORDER:
+        for key in ['gain', 'bias']:
+            values[key].append(gain_bias[band][key])
+    return values
+
+
 def _parse_metadata_xml(root):
     meta = {}
     meta['angles'] = _get_angles(root)
     meta['spacecraft'] = _get_spacecraft(root)
     meta['sensing_time'] = _get_sensing_time(root)
     meta['footprint'] = _get_footprint(root)
+    meta['calibration'] = _get_gain_bias(root)
+    meta['calibration_values'] = _postproc_gain_bias_values(meta['calibration'])
     for name, key in COPY_RENAME.items():
         meta[key] = converters.get_single(root, name)
     for name, key in COPY_RENAME_INT.items():
@@ -77,4 +98,3 @@ def parse_metadata(xmlfile_or_str):
     else:
         root = converters.get_root(metadatafile=xmlfile_or_str)
     return _parse_metadata_xml(root)
-
