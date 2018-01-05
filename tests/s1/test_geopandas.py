@@ -30,6 +30,19 @@ def test_group_gdf():
     grouped = s1geopandas.group_gdf(gdf)
     for meta, infiles_group in grouped:
         assert isinstance(meta, dict)
+        assert 'date' in meta
+        assert 'relative_orbit_number' in meta
+        break
+
+
+def test_group_by_relorbit_and_date():
+    infiles = [test_data['SAFE'], test_data['zip']]
+    gdf = s1geopandas.meta_as_geopandas(infiles)
+    grouped = s1geopandas.group_by_relorbit_and_date(gdf)
+    for meta, infiles_group in grouped:
+        assert isinstance(meta, dict)
+        assert 'date' in meta
+        assert 'relative_orbit_number' in meta
         break
 
 

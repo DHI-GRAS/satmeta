@@ -1,5 +1,6 @@
 import logging
 import multiprocessing
+import concurrent.futures
 
 import geopandas as gpd
 import pandas as pd
@@ -61,9 +62,9 @@ def meta_as_geopandas(infiles, multiprocessing_above=40):
         set to None to disable
     """
     if multiprocessing_above is not None and len(infiles) > multiprocessing_above:
-        p = multiprocessing.Pool()
-        gss = p.map(_get_meta_as_geoseries_failsafe, infiles)
-        p.close()
+        nprocs = multiprocessing.cpu_count()
+        with concurrent.futures.ProcessPoolExecutor(nprocs) as executor:
+            gss = list(executor.map(_get_meta_as_geoseries_failsafe, infiles))
     else:
         gss = [_get_meta_as_geoseries_failsafe(infile) for infile in infiles]
     gss_good = []
@@ -112,6 +113,35 @@ def group_gdf(gdf):
                         date=date, relative_orbit_number=relative_orbit_number, passdir=passdir,
                         spacecraft=spacecraft, footprint_union=fp)
                     yield meta, gdf_spacecraft['filepath'].values.tolist()
+
+
+def group_by_relorbit_and_date(gdf):
+    """Group input files GeoDataFrame by relative orbit and date
+
+    Parameters
+    ----------
+    gdf : GeoDataFrame
+        input metadata
+
+    Yields
+    ------
+    meta : dict
+        metadata for group
+    infiles : list of str
+        paths to input files in group
+
+    Order
+    -----
+    Groups will be ordered by date first and relative orbit number second
+    i.e. consecutive pairs have same relative orbit but different date
+    but might also have different relative orbit when one group ends
+    """
+    gdf['date'] = pd.DatetimeIndex(gdf.sensing_start).date
+    for relative_orbit_number, gdf_rob in gdf.groupby('relative_orbit_number'):
+        for date, gdf_date in gdf_rob.groupby('date'):
+            meta = dict(
+                date=date, relative_orbit_number=relative_orbit_number)
+            yield meta, gdf_date['filepath'].values.tolist()
 
 
 def filter_gdf(
