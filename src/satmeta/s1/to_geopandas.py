@@ -114,6 +114,35 @@ def group_gdf(gdf):
                     yield meta, gdf_spacecraft['filepath'].values.tolist()
 
 
+def group_by_relorbit_and_date(gdf):
+    """Group input files GeoDataFrame by relative orbit and date
+
+    Parameters
+    ----------
+    gdf : GeoDataFrame
+        input metadata
+
+    Yields
+    ------
+    meta : dict
+        metadata for group
+    infiles : list of str
+        paths to input files in group
+
+    Order
+    -----
+    Groups will be ordered by date first and relative orbit number second
+    i.e. consecutive pairs have same relative orbit but different date
+    but might also have different relative orbit when one group ends
+    """
+    gdf['date'] = pd.DatetimeIndex(gdf.sensing_start).date
+    for relative_orbit_number, gdf_rob in gdf.groupby('relative_orbit_number'):
+        for date, gdf_date in gdf_rob.groupby('date'):
+            meta = dict(
+                date=date, relative_orbit_number=relative_orbit_number)
+            yield meta, gdf_date['filepath'].values.tolist()
+
+
 def filter_gdf(
         gdf, rel_orbit_numbers=None, footprint_overlaps=None,
         start_date=None, end_date=None):
