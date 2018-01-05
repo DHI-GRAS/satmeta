@@ -1,5 +1,6 @@
 import logging
 import multiprocessing
+import concurrent.futures
 
 import geopandas as gpd
 import pandas as pd
@@ -61,9 +62,9 @@ def meta_as_geopandas(infiles, multiprocessing_above=40):
         set to None to disable
     """
     if multiprocessing_above is not None and len(infiles) > multiprocessing_above:
-        p = multiprocessing.Pool()
-        gss = p.map(_get_meta_as_geoseries_failsafe, infiles)
-        p.close()
+        nprocs = multiprocessing.cpu_count()
+        with concurrent.futures.ProcessPoolExecutor(nprocs) as executor:
+            gss = list(executor.map(_get_meta_as_geoseries_failsafe, infiles))
     else:
         gss = [_get_meta_as_geoseries_failsafe(infile) for infile in infiles]
     gss_good = []
