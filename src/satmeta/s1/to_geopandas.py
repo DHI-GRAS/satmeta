@@ -82,7 +82,7 @@ def _get_footprint_union(gdf):
     return shapely.ops.unary_union(gdf['footprint'].values).convex_hull
 
 
-def group_gdf(gdf):
+def stitchable_infiles(gdf):
     """Group input files GeoDataFrame to get stitchable file sets
 
     Groups by:
@@ -127,8 +127,8 @@ def group_by_relorbit_and_date(gdf):
     ------
     meta : dict
         metadata for group
-    infiles : list of str
-        paths to input files in group
+    gdf_date : GeoDataFrame
+        grouped meta data
 
     Order
     -----
@@ -141,7 +141,7 @@ def group_by_relorbit_and_date(gdf):
         for date, gdf_date in gdf_rob.groupby('date'):
             meta = dict(
                 date=date, relative_orbit_number=relative_orbit_number)
-            yield meta, gdf_date['filepath'].values.tolist()
+            yield meta, gdf_date
 
 
 def filter_gdf(
