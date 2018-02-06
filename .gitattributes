@@ -1,1 +1,2 @@
 src/satmeta/_version.py export-subst
+satmeta/_version.py export-subst
