@@ -6,7 +6,7 @@ from .data import test_tile_ID
 
 
 def test_parse_metadata():
-    for key in ['new', 'old']:
+    for key in ['new', 'old', 'L2A']:
         infile = test_data[key]['xml']
         meta = s2meta.parse_metadata(infile)
         assert isinstance(meta, dict)

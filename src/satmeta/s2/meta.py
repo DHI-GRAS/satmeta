@@ -136,20 +136,29 @@ def parse_granule_metadata_xml(root):
     return metadata
 
 
+def _get_title_any_level(root):
+    try:
+        return converters.get_single(root, 'PRODUCT_URI')
+    except ValueError:
+        return converters.get_single(root, 'PRODUCT_URI_2A')
+
+
 def parse_metadata_xml(root):
     """Parse S2 PRODUCT meta data XML"""
     _get_single = functools.partial(converters.get_single, root)
     metadata = {
-            'title': _get_single('PRODUCT_URI'),
-            'sensing_time': converters.get_single_date(root, 'PRODUCT_START_TIME'),
-            'processing_level': _get_single('PROCESSING_LEVEL'),
+        'title': _get_title_any_level(root),
+        'sensing_time': converters.get_single_date(root, 'PRODUCT_START_TIME'),
+        'processing_level': _get_single('PROCESSING_LEVEL')}
+    if metadata['processing_level'] == 'Level-1C':
+        metadata.update({
             'orbit_direction': _get_single('SENSING_ORBIT_DIRECTION'),
             'quantification_value': _get_single('QUANTIFICATION_VALUE', to_type=int),
             'reflectance_conversion': _get_single(
                 'Reflectance_Conversion/U', to_type=float),
             'irradiance_values': converters.get_all(
                 root,
-                'Reflectance_Conversion/Solar_Irradiance_List/SOLAR_IRRADIANCE', to_type=float)}
+                'Reflectance_Conversion/Solar_Irradiance_List/SOLAR_IRRADIANCE', to_type=float)})
     metadata['spacecraft'] = _spacecraft_from_spacecraft_name(_get_single('SPACECRAFT_NAME'))
     return metadata
 
