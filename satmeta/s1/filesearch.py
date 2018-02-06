@@ -1,5 +1,4 @@
 import os
-import re
 import glob
 import logging
 import functools
@@ -63,39 +62,6 @@ def filter_infiles_by_date(infiles, start_date=None, end_date=None):
                 continue
         infiles_filtered.append(infile)
     return infiles_filtered
-
-
-def filter_rel_orbit_numbers(infiles, rel_orbit_numbers):
-    """Filter files that have an orbit number specified in rel_orbit_numbers"""
-    infiles_filtered = []
-    for infile in infiles:
-        try:
-            o = meta.get_rel_orbit_number(infile)
-        except meta.MetaDataError as me:
-            logger.info(
-                    'Unable to get orbit number from file \'%s\'. %s. Skipping.',
-                    infile, me)
-            continue
-        logger.debug('Input file \'%s\' has orbit number %s.', infile, o)
-        if o in rel_orbit_numbers:
-            infiles_filtered.append(infile)
-    return infiles_filtered
-
-
-def check_same_infile_type(infiles):
-    """Check whether all input files have same file type"""
-    if not infiles:
-        return True
-    patterns = ['manifest\.safe', '.*\.zip', '.*\.SAFE']
-    all_match = []
-    for pattern in patterns:
-        matching = [re.match(pattern, os.path.basename(infile)) is not None for infile in infiles]
-        if matching:
-            all_match.append(all(matching))
-    if sum(all_match) == 1:
-        return True
-    else:
-        return False
 
 
 def _metadata_matches(metadata, rel_orbit_numbers=None, aoi=None):
