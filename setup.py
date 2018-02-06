@@ -8,8 +8,7 @@ setup(
     description='Satellite Meta Data Extraction',
     author='Jonas Solvsteen',
     author_email='josl@dhigroup.com',
-    packages=find_packages('src'),
-    package_dir={'': 'src'},
+    packages=find_packages(),
     install_requires=[
         'python-dateutil',
         'lxml',

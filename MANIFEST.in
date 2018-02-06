@@ -1,2 +1,2 @@
 include versioneer.py
-include src/satmeta/_version.py
+include satmeta/_version.py
