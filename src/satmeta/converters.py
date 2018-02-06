@@ -10,8 +10,11 @@ logger = logging.getLogger(__name__)
 
 def get_root(metadatafile=None, metadatastr=None):
     if metadatafile is not None:
-        with codecs.open(metadatafile, encoding='utf-8') as fin:
-            metadatastr = fin.read()
+        try:
+            return lxml.etree.parse(metadatafile).getroot()
+        except ValueError:
+            with codecs.open(metadatafile, encoding='utf-8') as fin:
+                metadatastr = fin.read()
     elif metadatastr is None:
         raise ValueError('Either metadatafile or metadatastr must be specified.')
     try:
