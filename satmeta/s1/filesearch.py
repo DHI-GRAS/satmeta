@@ -7,7 +7,7 @@ from satmeta.s1 import meta
 
 logger = logging.getLogger(__name__)
 
-search_patterns = {
+SEARCH_PATTERNS = {
         'SAFE': 'S1?_*.SAFE',
         'zip': 'S1?_*.zip'}
 
@@ -30,12 +30,15 @@ def find_input_files(indir, formats=['zip', 'SAFE'], ignore_empty=True):
     """
     infiles = []
     for fmtkey in formats:
-        filepattern = os.path.join(indir, search_patterns[fmtkey])
+        filepattern = os.path.join(indir, SEARCH_PATTERNS[fmtkey])
         logger.debug('File search pattern is \'%s\'.', filepattern)
         infiles_found = glob.glob(filepattern)
         logger.debug('Found %d files of format %s', len(infiles_found), fmtkey)
-        if ignore_empty and fmtkey == 'zip':
-            infiles_found = list(filter(os.path.getsize, infiles_found))
+        if ignore_empty:
+            if fmtkey == 'zip':
+                infiles_found = list(filter(os.path.getsize, infiles_found))
+            else:
+                infiles_found = list(filter(os.listdir, infiles_found))
         infiles += infiles_found
     return infiles
 
