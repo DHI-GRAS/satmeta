@@ -24,7 +24,7 @@ def test_find_input_files():
 
 def test_find_input_files_empty(tmpdir):
     searchdir = tmpdir.mkdir('empty_stuff')
-    with open(searchdir.join('S1B_empty.zip'), 'w'):
+    with open(str(searchdir.join('S1B_empty.zip')), 'w'):
         pass
     searchdir.mkdir('S1A_empty.SAFE')
     infiles = s1filesearch.find_input_files(
