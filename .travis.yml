@@ -1,7 +1,13 @@
 language: python
+
+branches:
+  only:
+    - master
+
 python:
   - "2.7"
   - "3.6"
+
 install:
   - sudo apt-get update
   # We do this conditionally because it saves us some downloading if the
@@ -28,7 +34,14 @@ install:
   - pip install -e .[test]
   - conda info
   - conda list
+
 script:
   - coverage run --source=satmeta -m py.test -v
+
 after_success:
   - codecov
+
+notifications:
+  email:
+    on_failure: change
+    on_success: change
