@@ -53,14 +53,15 @@ def parse_metadata(metadatafile=None, metadatastr=None):
     root = converters.get_root(metadatafile, metadatastr)
     _get_single = functools.partial(converters.get_single, root)
     metadata = {
-            'title': converters.get_instance(root, 'safe:resource', 'name', index=0),
-            'footprint': converters.get_single_polygon_yx(root, 'gml:coordinates'),
-            'relative_orbit_number': _get_relative_orbit_number(root),
-            'sensing_start': converters.get_single_date(root, 'safe:startTime'),
-            'sensing_end': converters.get_single_date(root, 'safe:stopTime'),
-            'product_type': _get_single('s1sarl1:productType'),
-            'polarizations': converters.get_all(root, 's1sarl1:transmitterReceiverPolarisation'),
-            'passdir': _get_single('s1:pass')}
+        'title': converters.get_instance(root, 'safe:resource', 'name', index=0),
+        'footprint': converters.get_single_polygon_yx(root, 'gml:coordinates'),
+        'relative_orbit_number': _get_relative_orbit_number(root),
+        'sensing_start': converters.get_single_date(root, 'safe:startTime'),
+        'sensing_end': converters.get_single_date(root, 'safe:stopTime'),
+        'product_type': _get_single('s1sarl1:productType'),
+        'polarizations': converters.get_all(root, 's1sarl1:transmitterReceiverPolarisation'),
+        'passdir': _get_single('s1:pass'),
+        'sensor_operational_mode': _get_single('s1sarl1:mode')}
     metadata['spacecraft'] = get_spacecraft_name(metadata['title'])
     metadata['sensing_time'] = metadata['sensing_start']
     return metadata

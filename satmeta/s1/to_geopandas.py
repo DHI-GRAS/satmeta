@@ -89,7 +89,8 @@ def stitchable_infiles(gdf):
       1. date (assuming that all files from one date are from the same overpass)
       2. relative orbit
       3. pass direction
-      4. spacecraft (S1A, S1B)
+      4. sensor operational mode
+      5. spacecraft (S1A, S1B)
 
     Parameters
     ----------
@@ -108,11 +109,13 @@ def stitchable_infiles(gdf):
         for relative_orbit_number, gdf_rob in gdf_date.groupby('relative_orbit_number'):
             for passdir, gdf_passdir in gdf_rob.groupby('passdir'):
                 for spacecraft, gdf_spacecraft in gdf_passdir.groupby('spacecraft'):
-                    fp = _get_footprint_union(gdf_spacecraft)
-                    meta = dict(
-                        date=date, relative_orbit_number=relative_orbit_number, passdir=passdir,
-                        spacecraft=spacecraft, footprint_union=fp)
-                    yield meta, gdf_spacecraft['filepath'].values.tolist()
+                    for somode, gdf_somode in gdf_spacecraft.groupby('sensor_operational_mode'):
+                        fp = _get_footprint_union(gdf_spacecraft)
+                        meta = dict(
+                            date=date, relative_orbit_number=relative_orbit_number,
+                            passdir=passdir, sensor_operational_mode=somode,
+                            spacecraft=spacecraft, footprint_union=fp)
+                        yield meta, gdf_somode['filepath'].values.tolist()
 
 
 def group_by_relorbit_and_date(gdf):
