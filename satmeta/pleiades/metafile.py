@@ -4,9 +4,10 @@ import glob
 
 def find_metafile_in_folder(path):
     pattern = os.path.join(path, 'IMG_*', 'DIM_*.XML')
-    try:
-        return glob.glob(pattern)[0]
-    except IndexError:
+    paths = glob.glob(pattern)
+    if len(paths) == 1:
+        return paths[0]
+    else:
         raise ValueError(
-            'No Pleiades metadata file found with pattern \'{}\'.'
-            .format(pattern))
+            'Expecting to find exactly one (found: {}) Pleiades metadata file with pattern \'{}\'.'
+            .format(len(paths), pattern))
