@@ -91,7 +91,11 @@ def _parse_metadata_xml(root):
     meta['band_order'] = _get_band_order(root)
     meta['calibration_values'] = _postproc_gain_bias_values(
         meta['calibration'], meta['band_order'])
-    meta['ntiles'] = int(converters.get_single(root, 'NTILES'))
+    try:
+        # ntiles sometimes missing
+        meta['ntiles'] = int(converters.get_single(root, 'NTILES'))
+    except ValueError:
+        meta['ntiles'] = None
     for name, key in COPY_RENAME.items():
         meta[key] = converters.get_single(root, name)
     for name, key in COPY_RENAME_INT.items():
