@@ -14,10 +14,10 @@ logger = logging.getLogger(__name__)
 def dates_from_fname(fname, zero_time=False):
     fname = os.path.basename(fname)
     if zero_time:
-        regex = '(\d{8})(?=t\d{6})'
+        regex = r'(\d{8})(?=t\d{6})'
         fmt = '%Y%m%d'
     else:
-        regex = '\d{8}t\d{6}'
+        regex = r'\d{8}t\d{6}'
         fmt = '%Y%m%dt%H%M%S'
     dd = re.findall(regex, fname.lower())
     if not dd:
@@ -30,7 +30,7 @@ def dates_from_fname(fname, zero_time=False):
 def get_spacecraft_name(fname):
     fname = os.path.basename(fname)
     try:
-        return re.match('(^S\d[AB])', fname).group()
+        return re.match(r'(^S\d[AB])', fname).group()
     except AttributeError:
         raise ValueError('Unable to get spacecraft name from fname \'{}.\''.format(fname))
 

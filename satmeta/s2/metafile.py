@@ -38,7 +38,7 @@ def read_metafile_SAFE(inSAFE):
 
 
 def find_metafile_in_zip(names):
-    compiled_pattern = re.compile('[\w_\.]*?\.SAFE/[\w_\.]*?\.xml')
+    compiled_pattern = re.compile(r'[\w_\.]*?\.SAFE/[\w_\.]*?\.xml')
 
     def _filterfunc(s):
         return compiled_pattern.match(s) and 'INSPIRE' not in s
@@ -141,9 +141,9 @@ def find_granule_metafiles_in_zip_names(names, tile_regex='', tile_name=None):
         tile_regex = 'T{}'.format(tile_name.upper().lstrip('T'))
     """Find granule metafiles in list of zip member namers"""
     pattern = (
-            '([\w_\.]*?\.SAFE)/GRANULE/([\w_\.]*?)' +
+            r'([\w_\.]*?\.SAFE)/GRANULE/([\w_\.]*?)' +
             tile_regex +
-            '([\w_\.]*?)/([\w_\.]*?\.xml)')
+            r'([\w_\.]*?)/([\w_\.]*?\.xml)')
     compiled_pattern = re.compile(pattern)
 
     def _filterfunc(s):

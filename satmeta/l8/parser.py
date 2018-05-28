@@ -152,7 +152,7 @@ def _postprocess_title(metadata):
 
 def _postprocess_spacecraft(metadata):
     scid = metadata['spacecraft_id']
-    metadata['spacecraft'] = ''.join(re.search('(L)ANDSAT_(\d)', scid).groups())
+    metadata['spacecraft'] = ''.join(re.search(r'(L)ANDSAT_(\d)', scid).groups())
 
 
 def _get_footprint(metadata, xext, yext):
