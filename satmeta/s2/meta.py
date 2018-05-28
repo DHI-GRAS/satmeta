@@ -65,7 +65,7 @@ def _generate_image_bounds(image_transform, image_shape):
 def _tile_name_from_tile_ID(tile_ID):
     """Get tile name (ZZAAA) from tile ID or file name"""
     try:
-        return re.search('(?<=T)\d{2}[A-Z]{3}', tile_ID).group(0)
+        return re.search(r'(?<=T)\d{2}[A-Z]{3}', tile_ID).group(0)
     except AttributeError:
         raise ValueError(
                 'Unable to get tile name from ID \'{}\'.'.format(tile_ID))
@@ -74,7 +74,7 @@ def _tile_name_from_tile_ID(tile_ID):
 def find_tile_name(fname):
     fname = os.path.basename(fname)
     try:
-        return re.search('\d{2}[A-Z]{3}', fname).group(0)
+        return re.search(r'\d{2}[A-Z]{3}', fname).group(0)
     except AttributeError:
         raise ValueError(
                 'Unable to get tile name from \'{}\'.'.format(fname))
