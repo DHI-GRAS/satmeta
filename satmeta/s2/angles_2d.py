@@ -9,13 +9,13 @@ from satmeta.s2 import utils as s2utils
 from satmeta import utils
 from satmeta import converters
 
-_angles_tags = {
+ANGLES_TAGS = {
         'Viewing_Incidence': (
             'Viewing_Incidence_Angles_Grids[@bandId="{bandId}"]'),
         'Sun': 'Sun_Angles_Grid'}
 
-_all_angles = ['Viewing_Incidence', 'Sun']
-_all_dirs = ['Zenith', 'Azimuth']
+ALL_ANGLES = ['Viewing_Incidence', 'Sun']
+ALL_DIRS = ['Zenith', 'Azimuth']
 
 
 def _get_res(root, group):
@@ -24,7 +24,8 @@ def _get_res(root, group):
     for s in ['COL_STEP', 'ROW_STEP']:
         tagname = posixpath.join(group, s)
         res[s] = converters.get_instance(
-                root, tagname, index=0, to_type=int)
+                root, tagname, index=0, to_type=int
+        )
     return res
 
 
@@ -143,7 +144,8 @@ def _extrapolate_nan(a_raw):
 def _get_resample_angles_rasterio(
         root, group, dst_res=None, dst_transform=None,
         dst_crs=None, dst_shape=None, extrapolate=True,
-        resampling=None, meta=None):
+        resampling=None, meta=None
+):
     """Parse angles and resample to dst_res
 
     Parameters
@@ -177,7 +179,8 @@ def _get_resample_angles_rasterio(
         resampling = rasterio.warp.Resampling.bilinear
 
     angles_raw, src_transform, src_crs = _get_angles_with_gref(
-        root, group, meta=meta)
+        root, group, meta=meta
+    )
 
     # convert to rasterio CRS for safe comparison
     src_crs = rasterio.crs.CRS(src_crs)
@@ -196,7 +199,8 @@ def _get_resample_angles_rasterio(
                 rasterio.warp.calculate_default_transform(
                     src_crs, dst_crs, src_width, src_height,
                     *src_bounds,
-                    resolution=dst_res))
+                    resolution=dst_res)
+        )
         dst_shape = (dst_width, dst_height)
 
     if dst_transform is None:
@@ -213,11 +217,13 @@ def _get_resample_angles_rasterio(
         dst_shape=dst_shape,
         resampling=resampling,
         src_nodata=np.nan,
-        dst_nodata=np.nan)
+        dst_nodata=np.nan
+    )
 
 
 def _get_resample_angles_imresize(
-        root, group, dst_shape, interp='bilinear', extrapolate=True):
+        root, group, dst_shape, interp='bilinear', extrapolate=True
+):
     """Parse angles and resample with scipy.misc.imresize
 
     Parameters
@@ -241,7 +247,8 @@ def _get_resample_angles_imresize(
 
 
 def _get_resample_angles_zoom(
-        root, group, dst_shape=None, zoom=None, order=3, extrapolate=True):
+        root, group, dst_shape=None, zoom=None, order=3, extrapolate=True
+):
     """Parse angles and resample with scipy.ndimage.zoom
 
     Parameters
@@ -269,15 +276,16 @@ def _get_resample_angles_zoom(
 
 
 def _generate_group_name(angle, angle_dir, bandId):
-    tag = _angles_tags[angle].format(bandId=bandId)
+    tag = ANGLES_TAGS[angle].format(bandId=bandId)
     return posixpath.join(tag, angle_dir)
 
 
 def parse_angles(
         metadatafile=None, metadatastr=None,
-        angles=_all_angles,
-        angle_dirs=_all_dirs,
-        bandId=0):
+        angles=ALL_ANGLES,
+        angle_dirs=ALL_DIRS,
+        bandId=0
+):
     """Parse angles from GRANULE metadata
 
     Parameters
@@ -288,10 +296,10 @@ def parse_angles(
         metadata string
     angles : list of str
         angles to parse
-        subset of _all_angles
+        subset of ALL_ANGLES
     angle_dirs : list of str
         angle diretions
-        subset of _all_dirs
+        subset of ALL_DIRS
     bandId : int
         use this band to retrieve
         viewing angles
@@ -312,12 +320,13 @@ def parse_angles(
 
 def parse_resample_angles(
         metadatafile=None, metadatastr=None,
-        angles=_all_angles,
-        angle_dirs=_all_dirs,
+        angles=ALL_ANGLES,
+        angle_dirs=ALL_DIRS,
         bandId=0,
         dst_res_predefined=None,
         resample_method='rasterio',
-        **resample_kwargs):
+        **resample_kwargs
+):
     """Parse angles from GRANULE metadata and resample
 
     Parameters
@@ -328,10 +337,10 @@ def parse_resample_angles(
         metadata string
     angles : list of str
         angles to parse
-        subset of _all_angles
+        subset of ALL_ANGLES
     angle_dirs : list of str
         angle diretions
-        subset of _all_dirs
+        subset of ALL_DIRS
     bandId : int
         use this band to retrieve
         viewing angles
@@ -354,7 +363,8 @@ def parse_resample_angles(
     resample_funcs = {
         'rasterio': _get_resample_angles_rasterio,
         'zoom': _get_resample_angles_zoom,
-        'imresize': _get_resample_angles_imresize}
+        'imresize': _get_resample_angles_imresize
+    }
 
     try:
         resample_func = resample_funcs[resample_method]
