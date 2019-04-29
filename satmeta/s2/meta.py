@@ -133,6 +133,7 @@ def parse_granule_metadata_xml(root):
     metadata['image_shape'] = _generate_image_shape(metadata['image_size'])
     metadata['image_bounds'] = _generate_image_bounds(
             metadata['image_transform'], metadata['image_shape'])
+    metadata['crs'] = {'init': _get_single('HORIZONTAL_CS_CODE')}
     return metadata
 
 
