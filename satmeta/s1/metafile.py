@@ -1,4 +1,5 @@
 import os
+import re
 import glob
 import zipfile
 import posixpath
@@ -8,8 +9,6 @@ import logging
 from ..exceptions import MetaDataError
 
 logger = logging.getLogger(__name__)
-
-POLARISATIONS = ['VH', 'VV']
 
 
 def find_manifest_in_SAFE(path):
@@ -55,18 +54,15 @@ def read_manifest_ZIP(path):
         ) from e
 
 
-def _find_annotations_names(names):
-    found_names = {}
-    for polarisation in POLARISATIONS:
-        pattern = f'*/annotation/s1?-*-{polarisation.lower()}-*-???.xml'
-        found = fnmatch.filter(names, pattern)
-        if not found:
-            raise ValueError(f'No annotations name found with pattern "{pattern}".')
-        elif len(found) == 1:
-            found_names[polarisation] = found[0]
-        else:
-            raise ValueError(f'More than one annotations name found with pattern "{pattern}".')
-    return found_names
+def _get_swath_polarisation(name):
+    try:
+        swath, polarisation = re.match(r's1[a-z]-(iw\d?)-.*-(v[vh]).*\.xml', name).groups()
+    except AttributeError:
+        raise ValueError(f'Unable to find swath and polarisation in name "{name}".')
+    return dict(
+        polarisation=polarisation.upper(),
+        swath=swath.upper()
+    )
 
 
 def read_annotations_ZIP(path):
@@ -82,17 +78,25 @@ def read_annotations_ZIP(path):
     str
         metadata as string
     """
+    annotations = {}
     try:
-        data = {}
         with zipfile.ZipFile(path) as zf:
-            annotation_names = _find_annotations_names(zf.namelist())
-            for polarisation, zippath in annotation_names.items():
-                data[polarisation] = zf.open(zippath).read()
+            names = zf.namelist()
+            pattern = f'*/annotation/s1?-iw*-*.xml'
+            found = fnmatch.filter(names, pattern)
+            if not found:
+                raise ValueError(f'No annotations name found with pattern "{pattern}" in {names}.')
+            for name in found:
+                key = '{polarisation}_{swath}'.format(
+                    **_get_swath_polarisation(posixpath.basename(name))
+                )
+                data = zf.open(name).read()
+                annotations[key] = data
     except zipfile.BadZipfile as e:
         raise MetaDataError(
             'Unable to read zip file \'{}\': {}'.format(path, str(e))
         ) from e
-    return data
+    return annotations
 
 
 def read_annotations_SAFE(path):
@@ -108,17 +112,18 @@ def read_annotations_SAFE(path):
     str
         metadata as string
     """
-    data = {}
-    for polarisation in POLARISATIONS:
-        pattern = os.path.join(
-            path, 'annotations', f'*/annotation/s1?-*-{polarisation.lower()}-*-???.xml'
+    pattern = os.path.join(
+        path, 'annotations', f'*/annotation/s1[a-z]-*-???.xml'
+    )
+    found = list(glob.glob(pattern))
+    if not found:
+        raise ValueError(f'No annotations file found with pattern "{pattern}".')
+    annotations = {}
+    for path in found:
+        key = '{polarisation}_{swath}'.format(
+            **_get_swath_polarisation(os.path.basename(path))
         )
-        found = list(glob.glob(pattern))
-        if not found:
-            raise ValueError(f'No annotations file found with pattern "{pattern}".')
-        elif len(found) == 1:
-            with open(found[0]) as f:
-                data[polarisation] = f.read()
-        else:
-            raise ValueError(f'More than one annotations files found with pattern "{pattern}".')
-    return data
+        with open(path) as f:
+            data = f.read()
+        annotations[key] = data
+    return annotations
