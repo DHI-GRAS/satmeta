@@ -7,25 +7,23 @@ try:
 except ImportError:
     pytestmark = pytest.mark.skip(reason='geopandas not installed')
 
-from .data import test_data
-
 gpd = pytest.importorskip('geopandas')
 
 
-def test_meta_as_geopandas():
-    infiles = [test_data['SAFE'], test_data['zip']]
+def test_meta_as_geopandas(safe_unzipped, safe_zip):
+    infiles = [safe_unzipped, safe_zip]
     gdf = s1geopandas.meta_as_geopandas(infiles)
     assert isinstance(gdf, gpd.GeoDataFrame)
 
 
-def test_meta_as_geopandas_multiprocessing():
-    infiles = [test_data['SAFE'], test_data['zip']]
+def test_meta_as_geopandas_multiprocessing(safe_unzipped, safe_zip):
+    infiles = [safe_unzipped, safe_zip]
     gdf = s1geopandas.meta_as_geopandas(infiles, multiprocessing_above=0)
     assert isinstance(gdf, gpd.GeoDataFrame)
 
 
-def test_stitchable_infiles():
-    infiles = [test_data['SAFE'], test_data['zip']]
+def test_stitchable_infiles(safe_unzipped, safe_zip):
+    infiles = [safe_unzipped, safe_zip]
     gdf = s1geopandas.meta_as_geopandas(infiles)
     grouped = s1geopandas.stitchable_infiles(gdf)
     for meta, infiles_group in grouped:
@@ -36,8 +34,8 @@ def test_stitchable_infiles():
         break
 
 
-def test_group_by_relorbit_and_date():
-    infiles = [test_data['SAFE'], test_data['zip']]
+def test_group_by_relorbit_and_date(safe_unzipped, safe_zip):
+    infiles = [safe_unzipped, safe_zip]
     gdf = s1geopandas.meta_as_geopandas(infiles)
     grouped = s1geopandas.group_by_relorbit_and_date(gdf)
     for meta, infiles_group in grouped:
@@ -46,8 +44,8 @@ def test_group_by_relorbit_and_date():
         break
 
 
-def test_filter_gdf():
-    infiles = [test_data['SAFE'], test_data['zip']]
+def test_filter_gdf(safe_unzipped, safe_zip):
+    infiles = [safe_unzipped, safe_zip]
     gdf = s1geopandas.meta_as_geopandas(infiles)
     gdf_filtered = s1geopandas.filter_gdf(
         gdf,

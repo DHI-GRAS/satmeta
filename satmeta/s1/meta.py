@@ -79,7 +79,9 @@ def parse_annotations(annotationsfile=None, annotationsstr=None):
 
 def find_parse_metadata(infile, annotations=False):
     """Find and parse manifest in SAFE or zip file"""
+    # handle pathlib.Path
     astrdict = None
+    infile = str(infile)
     if infile.endswith('.SAFE'):
         mstr = metafile.read_manifest_SAFE(infile)
         if annotations:
@@ -96,6 +98,6 @@ def find_parse_metadata(infile, annotations=False):
     data = parse_metadata(metadatastr=mstr)
     if astrdict is not None:
         data['annotations'] = {}
-        for polarisation, astr in astrdict.items():
-            data['annotations'][polarisation] = parse_annotations(annotationsstr=astr)
+        for key, astr in astrdict.items():
+            data['annotations'][key] = parse_annotations(annotationsstr=astr)
     return data

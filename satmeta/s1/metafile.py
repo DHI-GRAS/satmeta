@@ -45,9 +45,8 @@ def read_manifest_ZIP(path):
     """
     try:
         with zipfile.ZipFile(path) as zf:
-            SAFEdir = zf.namelist()[0]
-            manifest = posixpath.join(SAFEdir, 'manifest.safe')
-            return zf.open(manifest).read()
+            name = list(fnmatch.filter(zf.namelist(), '*/manifest.safe'))[0]
+            return zf.open(name).read()
     except zipfile.BadZipfile as e:
         raise MetaDataError(
             'Unable to read zip file \'{}\': {}'.format(path, str(e))
@@ -82,7 +81,7 @@ def read_annotations_ZIP(path):
     try:
         with zipfile.ZipFile(path) as zf:
             names = zf.namelist()
-            pattern = f'*/annotation/s1?-iw*-*.xml'
+            pattern = '*/annotation/s1?-iw*-*.xml'
             found = fnmatch.filter(names, pattern)
             if not found:
                 raise ValueError(f'No annotations name found with pattern "{pattern}" in {names}.')
@@ -113,7 +112,7 @@ def read_annotations_SAFE(path):
         metadata as string
     """
     pattern = os.path.join(
-        path, 'annotations', f'*/annotation/s1[a-z]-*-???.xml'
+        path, 'annotation', 's1?-iw*-*.xml'
     )
     found = list(glob.glob(pattern))
     if not found:
