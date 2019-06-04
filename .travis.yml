@@ -9,13 +9,8 @@ python:
 
 before_install:
   - sudo apt-get update
-  - sudo apt-get install python-pip
-  - python3 -m pip install virtualenv
-  - python3 -m venv ~/.envs/satmeta
-  - source ~/.envs/satmeta/bin/activate
   - python -m pip install rasterio pillow geopandas
 install:
-  - source ~/.envs/satmeta/bin/activate
   - python -m pip install -e .[test]
 
 script:
