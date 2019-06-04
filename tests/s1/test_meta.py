@@ -34,6 +34,13 @@ def test_find_parse_metadata_zip(safe_zip):
     assert isinstance(meta, dict)
 
 
+def test_find_parse_metadata_zip_annotation(safe_zip):
+    import satmeta.s1.meta as s1meta
+    meta = s1meta.find_parse_metadata(safe_zip, annotations=True)
+    assert isinstance(meta, dict)
+    assert 'annotations' in meta
+
+
 def test_meta_keys(manifest):
     import satmeta.s1.meta as s1meta
     meta = s1meta.parse_metadata(metadatafile=manifest)
