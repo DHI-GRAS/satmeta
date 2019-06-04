@@ -51,6 +51,6 @@ def test_filter_gdf(safe_unzipped, safe_zip):
         gdf,
         rel_orbit_numbers=gdf['relative_orbit_number'].values,
         footprint_overlaps=gdf['footprint'].values[0],
-        start_date=datetime.datetime(2016, 1, 1),
-        end_date=datetime.datetime(2016, 12, 31))
+        start_date=datetime.datetime(2019, 1, 1),
+        end_date=datetime.datetime(2025, 12, 31))
     assert len(gdf) == len(gdf_filtered)
