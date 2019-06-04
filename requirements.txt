@@ -1,4 +1,0 @@
-python-dateutil
-lxml
-shapely
-affine

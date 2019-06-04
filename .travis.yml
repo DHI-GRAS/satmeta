@@ -19,7 +19,7 @@ install:
   - python -m pip install -e .[test]
 
 script:
-  - coverage run --source=satmeta -m py.test -v
+  - python -m pytest -v --color=yes --cov=satmeta
 
 after_success:
   - codecov
