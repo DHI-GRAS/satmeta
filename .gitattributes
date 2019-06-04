@@ -1,2 +1,6 @@
 src/satmeta/_version.py export-subst
 satmeta/_version.py export-subst
+
+* text=auto
+
+*.zip binary

@@ -1,3 +1,4 @@
+from pathlib import Path
 import logging
 import codecs
 
@@ -9,6 +10,8 @@ logger = logging.getLogger(__name__)
 
 
 def get_root(metadatafile=None, metadatastr=None):
+    if isinstance(metadatafile, Path):
+        metadatafile = str(metadatafile)
     if metadatafile is not None:
         try:
             return lxml.etree.parse(metadatafile).getroot()

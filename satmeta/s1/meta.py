@@ -61,20 +61,43 @@ def parse_metadata(metadatafile=None, metadatastr=None):
         'product_type': _get_single('s1sarl1:productType'),
         'polarizations': converters.get_all(root, 's1sarl1:transmitterReceiverPolarisation'),
         'passdir': _get_single('s1:pass'),
-        'sensor_operational_mode': _get_single('s1sarl1:mode')}
+        'sensor_operational_mode': _get_single('s1sarl1:mode')
+    }
     metadata['spacecraft'] = get_spacecraft_name(metadata['title'])
     metadata['sensing_time'] = metadata['sensing_start']
     return metadata
 
 
-def find_parse_metadata(infile):
+def parse_annotations(annotationsfile=None, annotationsstr=None):
+    root = converters.get_root(annotationsfile, annotationsstr)
+    _get_single = functools.partial(converters.get_single, root)
+    annotations = {
+        'incidence_angle_mid_swath': _get_single('incidenceAngleMidSwath')
+    }
+    return annotations
+
+
+def find_parse_metadata(infile, annotations=False):
     """Find and parse manifest in SAFE or zip file"""
+    # handle pathlib.Path
+    astrdict = None
+    infile = str(infile)
     if infile.endswith('.SAFE'):
         mstr = metafile.read_manifest_SAFE(infile)
+        if annotations:
+            astrdict = metafile.read_annotations_SAFE(infile)
     elif infile.endswith('.zip'):
         mstr = metafile.read_manifest_ZIP(infile)
+        if annotations:
+            astrdict = metafile.read_annotations_ZIP(infile)
     else:
         raise ValueError(
-                'Input file/folder must end in .zip or .SAFE. '
-                'Got \'{}\'.'.format(infile))
-    return parse_metadata(metadatastr=mstr)
+            'Input file/folder must end in .zip or .SAFE. '
+            'Got \'{}\'.'.format(infile)
+        )
+    data = parse_metadata(metadatastr=mstr)
+    if astrdict is not None:
+        data['annotations'] = {}
+        for key, astr in astrdict.items():
+            data['annotations'][key] = parse_annotations(annotationsstr=astr)
+    return data

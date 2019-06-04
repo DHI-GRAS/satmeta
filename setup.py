@@ -13,7 +13,11 @@ setup(
         'python-dateutil',
         'lxml',
         'shapely',
-        'affine'],
+        'affine'
+    ],
     extras_require={
         'test': [
-            'pytest']})
+            'pytest>=4.0',
+            'codecov',
+            'pytest-cov'
+        ]})
