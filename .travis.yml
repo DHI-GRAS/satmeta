@@ -13,10 +13,10 @@ before_install:
   - python3 -m pip install virtualenv
   - python3 -m venv ~/.envs/satmeta
   - source ~/.envs/satmeta/bin/activate
-  - pip install rasterio pillow geopandas
+  - python -m pip install rasterio pillow geopandas
 install:
   - source ~/.envs/satmeta/bin/activate
-  - pip install -e .[test]
+  - python -m pip install -e .[test]
 
 script:
   - coverage run --source=satmeta -m py.test -v
