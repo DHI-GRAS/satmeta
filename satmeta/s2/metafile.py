@@ -4,6 +4,7 @@ import glob
 import shutil
 import zipfile
 import logging
+
 from ..exceptions import MetaDataError
 
 logger = logging.getLogger(__name__)
