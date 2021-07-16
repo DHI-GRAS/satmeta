@@ -217,8 +217,8 @@ def find_read_granule_metafiles(input_path, tile_name=None, **findkwargs):
 def extract_metafile(input_path, outfile):
     """Extract and save metadata file"""
     mstr = find_read_metafile(input_path)
-    with open(outfile, 'w') as fout:
-        fout.write(mstr)
+    with open(outfile, 'wb') as fout:
+        fout.write(mstr.encode("UTF-8"))
 
 
 def extract_single_granule_metafile(input_path, outfile, tile_name):
@@ -229,8 +229,8 @@ def extract_single_granule_metafile(input_path, outfile, tile_name):
         raise ValueError(
                 'No granule metadata file found in \'{}\' '
                 'for tile name \'{}\'.'.format(input_path, tile_name))
-    with open(outfile, 'w') as fout:
-        fout.write(mstr)
+    with open(outfile, 'wb') as fout:
+        fout.write(mstr.encode("UTF-8"))
 
 
 def extract_granule_metafiles_ZIP(zipfilepath, outdir, tile_name=None, **findkwargs):
