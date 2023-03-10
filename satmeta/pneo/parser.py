@@ -38,8 +38,8 @@ def _get_angles(root):
 
 
 def _get_spacecraft(root):
-    parts = _get_single_multi(root, names=['INSTRUMENT', 'INSTRUMENT_INDEX'])
-    return '{INSTRUMENT}{INSTRUMENT_INDEX}'.format(**parts)
+    parts = _get_single_multi(root, names=['MISSION', 'MISSION_INDEX'])
+    return '{MISSION}{MISSION_INDEX}'.format(**parts)
 
 
 def _get_sensing_time(root):
