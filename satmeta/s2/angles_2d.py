@@ -4,10 +4,9 @@ from collections import defaultdict
 
 import numpy as np
 
-from satmeta.s2 import meta as s2meta
-from satmeta.s2 import utils as s2utils
-from satmeta import utils
-from satmeta import converters
+from . import meta as s2meta
+from . import utils as s2utils
+from .. import utils, converters
 
 ANGLES_TAGS = {
         'Viewing_Incidence': (

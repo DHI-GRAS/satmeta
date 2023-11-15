@@ -1,0 +1,37 @@
+[build-system]
+requires = ["flit_core >=3.4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "satmeta"
+authors = [
+    {name = "Jonas Sølvsteen"},
+    {name = "Pantelis Kouris"},
+    {name = "Nicklas Simonsen", email = "nisi@dhigroup.com"},
+]
+description = "Satellite Meta Data Extraction"
+readme = "README.md"
+requires-python = ">=3.10"
+keywords = [
+    "geospatial", "geographic", "raster", "vector", 
+    "remote sensing", "bathymetry",
+]
+
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Utilities",
+    "Topic :: Scientific/Engineering :: GIS",
+]
+dependencies = [
+    "python-dateutil",
+    "lxml",
+    "shapely",
+    "affine",
+]
+dynamic = ["version"]
