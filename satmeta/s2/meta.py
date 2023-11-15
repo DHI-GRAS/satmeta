@@ -78,6 +78,10 @@ def find_tile_name(fname):
     except AttributeError:
         raise ValueError(
                 'Unable to get tile name from \'{}\'.'.format(fname))
+    
+def get_offset(metadatafile=None, metadatastr=None):
+    root = converters.get_root(metadatafile, metadatastr)
+    return converters.get_all(root, 'RADIO_ADD_OFFSET')
 
 
 def spacecraft_from_product_name(product_name):
