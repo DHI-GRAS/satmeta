@@ -5,4 +5,4 @@ COMMON_KEYS = [
     'sensing_time', 'title', 'spacecraft'
     ]
 
-__version__ = '2.0.0'
+__version__ = '2.0.1'
