@@ -81,7 +81,11 @@ def find_tile_name(fname):
     
 def get_offset(metadatafile=None, metadatastr=None):
     root = converters.get_root(metadatafile, metadatastr)
-    return converters.get_all(root, 'RADIO_ADD_OFFSET')
+    offsets = converters.get_all(root, 'RADIO_ADD_OFFSET')
+    if not offsets:
+        return None
+    else:
+        return offsets
 
 
 def spacecraft_from_product_name(product_name):
